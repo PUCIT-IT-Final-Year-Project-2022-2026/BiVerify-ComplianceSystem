@@ -16,9 +16,9 @@ const TopNavbar = ({ title, icon }) => {
   const G = "#2b9d4e";   
   return (
     <nav style={{
-      width: "100%", height: 60, background: G, padding: "0 28px",
+      width: "calc(100% - 240px)", height: 60, background: G, padding: "0 28px",
       display: "flex", alignItems: "center", justifyContent: "space-between",
-      position: "fixed", top: 0, left: 0, zIndex: 100,
+      position: "fixed", top: 0, left: 240, zIndex: 100,
       boxShadow: "0 2px 8px rgba(0,0,0,0.06)", boxSizing: "border-box",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -27,7 +27,7 @@ const TopNavbar = ({ title, icon }) => {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <span style={{ color: "#fff", fontSize: 15, fontWeight: 700, letterSpacing: "-0.3px", lineHeight: 1.2 }}>{title}</span>
-          <span style={{ color: "rgba(255,255,255,0.65)", fontSize: 11 }}>ADMIN PORTAL</span>
+          <span style={{ color: "rgba(255,255,255,0.65)", fontSize: 11 }}>CLIENT PORTAL</span>
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>

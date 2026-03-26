@@ -3,13 +3,26 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 
 import ClientSidebar   from "./components/ClientSidebar.jsx";
 import ProviderSidebar from "./components/ProviderSidebar.jsx";
+import LoginPage      from "./pages/Authentication/LoginPage";
+import ForgotPassword  from "./pages/Authentication/ForgotPassword";
 
 import ClientDashboard from "./pages/ClientSide/ClientDashboard.jsx";
 import B2BNetwork      from "./pages/ClientSide/B2BNetwork.jsx";
 import ServiceBookings from "./pages/ClientSide/ServiceBookings.jsx";
 import ComplianceVault from "./pages/ClientSide/ComplianceVault.jsx";
-import ProviderDashboard from "./pages/ProviderSide/ProviderDashboard.jsx";
-import ProviderB2BNetwork      from "./pages/ProviderSide/ProviderB2BNetwork.jsx";
+
+import ProviderDashboard   from "./pages/ProviderSide/ProviderDashboard.jsx";
+import ProviderB2BNetwork  from "./pages/ProviderSide/ProviderB2BNetwork.jsx";
+
+// Client Pages
+import MyTeamClient             from "./pages/ClientSide/MyTeam.jsx";
+import SystemAuditLogsClient    from "./pages/ClientSide/SystemAuditLogs.jsx";
+import OrganizationSettingsClient from "./pages/ClientSide/OrganizationSettings.jsx";
+
+// Provider Pages
+import MyTeamProvider             from "./pages/ProviderSide/MyTeam.jsx";
+import SystemAuditLogsProvider    from "./pages/ProviderSide/SystemAuditLogs.jsx";
+import OrganizationSettingsProvider from "./pages/ProviderSide/OrganizationSettings.jsx";
 
 // ── placeholder pages ──────────────────────────────────
 const Soon = ({ label }) => (
@@ -19,17 +32,14 @@ const Soon = ({ label }) => (
   </div>
 );
 
-// ── layout wrapper — picks sidebar based on path ───────
-function Layout() {
+// ── layout wrapper ───────
+function DashboardLayout({ children }) {
   const { pathname } = useLocation();
   const isProvider = pathname.startsWith("/provider");
 
   return (
     <>
-      {/* Sidebar — never remounts, just swaps */}
       {isProvider ? <ProviderSidebar /> : <ClientSidebar />}
-
-      {/* Page content */}
       <div style={{
         marginLeft: 240,
         minHeight: "100vh",
@@ -37,34 +47,7 @@ function Layout() {
         overflowX: "hidden",
         width: "calc(100% - 240px)",
       }}>
-        <Routes>
-
-          {/* ── ROOT ── */}
-          <Route path="/" element={<Navigate to="/overview" replace />} />
-
-          {/* ── CLIENT ROUTES ── */}
-          <Route path="/overview"  element={<ClientDashboard />} />
-          <Route path="/network"   element={<B2BNetwork />} />
-          <Route path="/Bookings"  element={<ServiceBookings />} />
-          <Route path="/vault"     element={<ComplianceVault />} />
-          <Route path="/team"      element={<Soon label="My Team" />} />
-          <Route path="/audit"     element={<Soon label="Audit Logs" />} />
-          <Route path="/settings"  element={<Soon label="Settings" />} />
-
-          {/* ── PROVIDER ROUTES ── */}
-          <Route path="/provider"                   element={<Navigate to="/provider/overview" replace />} />
-          <Route path="/provider/overview"          element={<ProviderDashboard />} />
-          <Route path="/provider/network"           element={<ProviderB2BNetwork />} />
-          <Route path="/provider/incoming-requests" element={<Soon label="Incoming Requests" />} />
-          <Route path="/provider/certifications"    element={<Soon label="Certifications" />} />
-          <Route path="/provider/company-staff"     element={<Soon label="Company Staff" />} />
-          <Route path="/provider/audit"             element={<Soon label="Audit History" />} />
-          <Route path="/provider/settings"          element={<Soon label="Provider Settings" />} />
-
-          {/* ── CATCH-ALL ── */}
-          <Route path="*" element={<Navigate to="/overview" replace />} />
-
-        </Routes>
+        {children}
       </div>
     </>
   );
@@ -73,7 +56,33 @@ function Layout() {
 export default function App() {
   return (
     <BrowserRouter>
-      <Layout />
+      <Routes>
+        {/* ── Auth Routes ── */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        
+        {/* ── Client Dashboard Routes ── */}
+        <Route path="/overview"                   element={<DashboardLayout><ClientDashboard /></DashboardLayout>} />
+        <Route path="/network"                    element={<DashboardLayout><B2BNetwork /></DashboardLayout>} />
+        <Route path="/Bookings"                   element={<DashboardLayout><ServiceBookings /></DashboardLayout>} />
+        <Route path="/vault"                      element={<DashboardLayout><ComplianceVault /></DashboardLayout>} />
+        <Route path="/team"                       element={<DashboardLayout><MyTeamClient /></DashboardLayout>} />
+        <Route path="/audit"                      element={<DashboardLayout><SystemAuditLogsClient /></DashboardLayout>} />
+        <Route path="/settings"                   element={<DashboardLayout><OrganizationSettingsClient /></DashboardLayout>} />
+
+        {/* ── Provider Dashboard Routes ── */}
+        <Route path="/provider/overview"          element={<DashboardLayout><ProviderDashboard /></DashboardLayout>} />
+        <Route path="/provider/network"           element={<DashboardLayout><ProviderB2BNetwork /></DashboardLayout>} />
+        <Route path="/provider/incoming-requests" element={<DashboardLayout><Soon label="Incoming Requests" /></DashboardLayout>} />
+        <Route path="/provider/certifications"    element={<DashboardLayout><Soon label="Certifications" /></DashboardLayout>} />
+        <Route path="/provider/team"              element={<DashboardLayout><MyTeamProvider /></DashboardLayout>} />
+        <Route path="/provider/audit"             element={<DashboardLayout><SystemAuditLogsProvider /></DashboardLayout>} />
+        <Route path="/provider/settings"          element={<DashboardLayout><OrganizationSettingsProvider /></DashboardLayout>} />
+
+        {/* ── Global Catch-All ── */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
     </BrowserRouter>
   );
 }

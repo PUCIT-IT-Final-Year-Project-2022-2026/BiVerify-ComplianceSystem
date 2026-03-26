@@ -305,16 +305,30 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #059669;
   font-size: 13px;
   font-weight: 600;
+}
+
+.status-badge.active {
+  color: #059669;
+}
+
+.status-badge.inactive {
+  color: #ef4444;
 }
 
 .status-dot {
   width: 6px;
   height: 6px;
-  background-color: #059669;
   border-radius: 50%;
+}
+
+.status-badge.active .status-dot {
+  background-color: #059669;
+}
+
+.status-badge.inactive .status-dot {
+  background-color: #ef4444;
 }
 
 .btn-icon {

@@ -16,9 +16,9 @@ const TopNavbar = ({ title, icon }) => {
   const G = "#2b9d4e";   
   return (
     <nav style={{
-      width: "100%", height: 60, background: G, padding: "0 28px",
+      width: "calc(100% - 240px)", height: 60, background: G, padding: "0 28px",
       display: "flex", alignItems: "center", justifyContent: "space-between",
-      position: "fixed", top: 0, left: 0, zIndex: 100,
+      position: "fixed", top: 0, left: 240, zIndex: 100,
       boxShadow: "0 2px 8px rgba(0,0,0,0.06)", boxSizing: "border-box",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -27,7 +27,7 @@ const TopNavbar = ({ title, icon }) => {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <span style={{ color: "#fff", fontSize: 15, fontWeight: 700, letterSpacing: "-0.3px", lineHeight: 1.2 }}>{title}</span>
-          <span style={{ color: "rgba(255,255,255,0.65)", fontSize: 11 }}>ADMIN PORTAL</span>
+          <span style={{ color: "rgba(255,255,255,0.65)", fontSize: 11 }}>CLIENT PORTAL</span>
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -47,7 +47,10 @@ export default function MyTeam() {
   const [teamMembers, setTeamMembers] = useState([
     { name: 'Sarah Ahmed', email: 'sarah@example.com', role: 'Site Inspector', status: 'Active' },
     { name: 'John Doe', email: 'john.doe@example.com', role: 'Site Inspector', status: 'Active' },
-    { name: 'David Smith', email: 'david@example.com', role: 'Admin', status: 'Inactive' }
+    { name: 'David Smith', email: 'david@example.com', role: 'Admin', status: 'Inactive' },
+    { name: 'Maria Garcia', email: 'm.garcia@example.com', role: 'Site Inspector', status: 'Active' },
+    { name: 'Robert Wilson', email: 'r.wilson@example.com', role: 'Editor', status: 'Active' },
+    { name: 'Jessica Chen', email: 'j.chen@example.com', role: 'Supervisor', status: 'Active' }
   ]);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -157,7 +160,7 @@ export default function MyTeam() {
                         <span className="member-email"><Mail size={14} />{member.email}</span>
                       </div>
                       <div className="col-role"><span className="role-badge">{member.role}</span></div>
-                      <div className="col-status"><span className="status-badge"><span className="status-dot"></span>{member.status}</span></div>
+                      <div className="col-status"><span className={`status-badge ${member.status?.toLowerCase()}`}><span className="status-dot"></span>{member.status}</span></div>
                       <div className="col-actions"><button className="btn-icon" onClick={() => handleDelete(index)}><Trash2 size={18} /></button></div>
                     </div>
                   ))}

@@ -23,7 +23,7 @@ const SECTIONS = [
     items: [
       { to: "/provider/incoming-requests", Icon: FaTh,      label: "Incoming Requests" },
       { to: "/provider/certifications",    Icon: FaFileAlt,  label: "Certifications"   },
-      { to: "/provider/company-staff",     Icon: FaUsers,    label: "Company Staff"    },
+      { to: "/provider/team",              Icon: FaUsers,    label: "Company Staff"    },
     ],
   },
   {
@@ -50,7 +50,7 @@ export default function ProviderSidebar() {
       background: G, zIndex: 10000,
       display: "flex", flexDirection: "column",
       overflowY: "auto",
-      borderRight: "none",
+      borderRight: `3px solid ${BORDER}`,
       fontFamily: "'DM Sans', sans-serif",
     }}>
 
