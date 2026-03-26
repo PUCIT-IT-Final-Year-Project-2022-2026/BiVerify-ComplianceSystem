@@ -1,4 +1,4 @@
-
+/* Color Palette from your guidelines */
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -33,7 +33,7 @@ body {
   padding: 0;
 }
 
-/* This is the login-wrapper */
+/* This matches the signup-wrapper your team lead provided */
 .login-wrapper {
   background: #f0fdf4;
   height: 100vh;
