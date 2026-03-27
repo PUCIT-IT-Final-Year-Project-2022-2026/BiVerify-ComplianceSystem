@@ -11,7 +11,7 @@ import B2BNetwork      from "./pages/ClientSide/B2BNetwork.jsx";
 import ServiceBookings from "./pages/ClientSide/ServiceBookings.jsx";
 import ComplianceVault from "./pages/ClientSide/ComplianceVault.jsx";
 
-import ProviderDashboard   from "./pages/ProviderSide/ProviderDashboard.jsx";
+import ProviderDashboard   from "./pages/ProviderSide/ServiceProviderDashboard.jsx";
 import ProviderB2BNetwork  from "./pages/ProviderSide/ProviderB2BNetwork.jsx";
 
 // Client Pages
@@ -23,6 +23,10 @@ import OrganizationSettingsClient from "./pages/ClientSide/OrganizationSettings.
 import MyTeamProvider             from "./pages/ProviderSide/MyTeam.jsx";
 import SystemAuditLogsProvider    from "./pages/ProviderSide/SystemAuditLogs.jsx";
 import OrganizationSettingsProvider from "./pages/ProviderSide/OrganizationSettings.jsx";
+import IncomingRequests from "./pages/ProviderSide/IncomingRequests.jsx";
+import ComplianceDocuments from "./pages/ProviderSide/ComplianceDocuments.jsx";
+import ServiceProviderDashboard from "./pages/ProviderSide/ServiceProviderDashboard.jsx";
+
 
 // ── placeholder pages ──────────────────────────────────
 const Soon = ({ label }) => (
@@ -71,10 +75,10 @@ export default function App() {
         <Route path="/settings"                   element={<DashboardLayout><OrganizationSettingsClient /></DashboardLayout>} />
 
         {/* ── Provider Dashboard Routes ── */}
-        <Route path="/provider/overview"          element={<DashboardLayout><ProviderDashboard /></DashboardLayout>} />
+        <Route path="/provider/overview"          element={<DashboardLayout><ServiceProviderDashboard /></DashboardLayout>} />
         <Route path="/provider/network"           element={<DashboardLayout><ProviderB2BNetwork /></DashboardLayout>} />
-        <Route path="/provider/incoming-requests" element={<DashboardLayout><Soon label="Incoming Requests" /></DashboardLayout>} />
-        <Route path="/provider/certifications"    element={<DashboardLayout><Soon label="Certifications" /></DashboardLayout>} />
+        <Route path="/provider/incoming-requests" element={<DashboardLayout><IncomingRequests /></DashboardLayout>} />
+        <Route path="/provider/certifications"    element={<DashboardLayout><ComplianceDocuments/></DashboardLayout>} />
         <Route path="/provider/team"              element={<DashboardLayout><MyTeamProvider /></DashboardLayout>} />
         <Route path="/provider/audit"             element={<DashboardLayout><SystemAuditLogsProvider /></DashboardLayout>} />
         <Route path="/provider/settings"          element={<DashboardLayout><OrganizationSettingsProvider /></DashboardLayout>} />
