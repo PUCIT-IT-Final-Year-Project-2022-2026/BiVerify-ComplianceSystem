@@ -28,6 +28,14 @@ import ComplianceDocuments from "./pages/ProviderSide/ComplianceDocuments.jsx";
 import ServiceProviderDashboard from "./pages/ProviderSide/ServiceProviderDashboard.jsx";
 
 
+//Admin Client Pages
+import ComplianceOperations from "./pages/ClientStaff/ComplianceOperations";
+import VerifyProvider from "./pages/ClientStaff/VerifyProvider";
+import ServiceOrders from "./pages/ClientStaff/ServiceOrders";
+
+//Admin Dashboard
+import AdminDashboard from "./pages/AdminDashboard/Admindashboard";
+
 // ── placeholder pages ──────────────────────────────────
 const Soon = ({ label }) => (
   <div style={{ padding: 40, fontFamily: "'DM Sans', sans-serif" }}>
@@ -83,10 +91,22 @@ export default function App() {
         <Route path="/provider/audit"             element={<DashboardLayout><SystemAuditLogsProvider /></DashboardLayout>} />
         <Route path="/provider/settings"          element={<DashboardLayout><OrganizationSettingsProvider /></DashboardLayout>} />
 
+        {/*Admin Client routes */}
+        <Route path="/compliance"                 element={<ComplianceOperations />} />
+        <Route path="/verify-provider"            element={<VerifyProvider />} />
+        <Route path="/service-orders"             element={<ServiceOrders />} />
+
+        {/*Admin Dashboard Route */}
+        <Route path="/admin-dashboard"             element={<AdminDashboard />} />
+
+
         {/* ── Global Catch-All ── */}
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
+
+        
       </Routes>
+
     </BrowserRouter>
   );
 }
