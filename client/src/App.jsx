@@ -10,18 +10,20 @@ import SignupPage from "./pages/Authentication/SignupPage";
 import ForgotPassword from "./pages/Authentication/ForgotPassword";
 
 import ClientDashboard from "./pages/ClientSide/ClientDashboard.jsx";
-import B2BNetwork from "./pages/ClientSide/B2BNetwork.jsx";
+import B2BNetwork from "./pages/ClientSide/B2Bnetwork.jsx";
 import ServiceBookings from "./pages/ClientSide/ServiceBookings.jsx";
 import ComplianceVault from "./pages/ClientSide/ComplianceVault.jsx";
+import PartnerProfile from "./pages/ClientSide/PartnerProfile.jsx";
 
 
-import ProviderDashboard from "./pages/ProviderSide/ServiceProviderDashboard.jsx";
+
 import ProviderB2BNetwork from "./pages/ProviderSide/ProviderB2BNetwork.jsx";
 
 // Client Pages
 import MyTeamClient from "./pages/ClientSide/MyTeam.jsx";
 import SystemAuditLogsClient from "./pages/ClientSide/SystemAuditLogs.jsx";
 import OrganizationSettingsClient from "./pages/ClientSide/OrganizationSettings.jsx";
+import ServiceRequest from "./pages/ClientSide/ServiceRequest.jsx";
 
 // Provider Pages
 import MyTeamProvider from "./pages/ProviderSide/MyTeam.jsx";
@@ -32,6 +34,9 @@ import ComplianceDocuments from "./pages/ProviderSide/ComplianceDocuments.jsx";
 import ServiceProviderDashboard from "./pages/ProviderSide/ServiceProviderDashboard.jsx";
 
 
+import ProviderPartnerProfile from "./pages/ProviderSide/ProviderPartnerProfile.jsx";
+
+
 //Admin Client Pages
 import ComplianceOperations from "./pages/ClientStaff/ComplianceOperations";
 import VerifyProvider from "./pages/ClientStaff/VerifyProvider";
@@ -39,6 +44,7 @@ import ServiceOrders from "./pages/ClientStaff/ServiceOrders";
 
 //Admin Dashboard
 import AdminDashboard from "./pages/AdminDashboard/Admindashboard";
+
 
 // ── placeholder pages ──────────────────────────────────
 const Soon = ({ label }) => (
@@ -86,6 +92,8 @@ export default function App() {
         <Route path="/team" element={<DashboardLayout><MyTeamClient /></DashboardLayout>} />
         <Route path="/audit" element={<DashboardLayout><SystemAuditLogsClient /></DashboardLayout>} />
         <Route path="/settings" element={<DashboardLayout><OrganizationSettingsClient /></DashboardLayout>} />
+        <Route path="/partner/:id" element={<DashboardLayout><PartnerProfile /></DashboardLayout>} />
+        <Route path="/service-request" element={<DashboardLayout><ServiceRequest /></DashboardLayout>} />
 
         {/* ── Provider Dashboard Routes ── */}
         <Route path="/provider/overview" element={<DashboardLayout><ServiceProviderDashboard /></DashboardLayout>} />
@@ -95,6 +103,7 @@ export default function App() {
         <Route path="/provider/team" element={<DashboardLayout><MyTeamProvider /></DashboardLayout>} />
         <Route path="/provider/audit" element={<DashboardLayout><SystemAuditLogsProvider /></DashboardLayout>} />
         <Route path="/provider/settings" element={<DashboardLayout><OrganizationSettingsProvider /></DashboardLayout>} />
+        <Route path="/provider/profile/:id" element={<DashboardLayout><ProviderPartnerProfile /></DashboardLayout>} />
 
         {/*Admin Client routes */}
         <Route path="/compliance" element={<ComplianceOperations />} />
