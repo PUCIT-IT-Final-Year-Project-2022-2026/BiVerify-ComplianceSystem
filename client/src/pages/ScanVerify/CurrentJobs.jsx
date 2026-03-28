@@ -36,10 +36,10 @@ export default function ProviderDashboard() {
     return (
         <div className="layout-container">
             <ProviderStaffSidebar activeItem="jobs" isOpen={isSidebarOpen} />
-            {isSidebarOpen && <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />}
+            {isSidebarOpen && <div className="staff-sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />}
 
             <div className="body-row">
-                <main className="main-content" style={{ background: BG }}>
+                <main className="staff-main-content" style={{ background: BG }}>
                     <div style={{
                         display: "flex",
                         justifyContent: "center",

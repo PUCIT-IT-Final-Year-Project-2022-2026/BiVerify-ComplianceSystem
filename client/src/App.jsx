@@ -1,3 +1,4 @@
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import ClientSidebar from "./components/ClientSidebar.jsx";
 import ProviderSidebar from "./components/ProviderSidebar.jsx";
 import ProviderStaffSidebar from "./components/ProviderStaffSidebar.jsx";
@@ -108,7 +109,7 @@ export default function App() {
         <Route path="/provider/scan" element={<ScanVerifyPage />} />
 
         {/* ── Global Catch-All ── */}
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<CurrentJobs />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
 
 

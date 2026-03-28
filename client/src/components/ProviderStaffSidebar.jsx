@@ -26,10 +26,10 @@ const navSections = [
 ];
 
 const ProviderStaffSideBar = ({ activeItem, isOpen }) => (
-    <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
-        <div className="sidebar-header desktop-only">
-            <div className="logo-icon"><Ico n="shield" s={18} c="#fff" /></div>
-            <h1 className="logo-text">Bi-Verify</h1>
+    <aside className={`staff-sidebar ${isOpen ? 'open' : ''}`}>
+        <div className="staff-sidebar-header desktop-only">
+            <div className="staff-logo-icon"><Ico n="shield" s={18} c="#fff" /></div>
+            <h1 className="staff-logo-text">Bi-Verify</h1>
         </div>
         <div className="menu-section">
             {navSections.map((sec, si) => (
@@ -57,7 +57,7 @@ const ProviderStaffSideBar = ({ activeItem, isOpen }) => (
                 </div>
             ))}
         </div>
-        <div className="sidebar-footer">
+        <div className="staff-sidebar-footer">
             <div className="user-profile">
                 <div className="avatar">s</div>
                 <div className="user-info">

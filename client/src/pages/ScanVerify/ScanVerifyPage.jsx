@@ -61,11 +61,11 @@ const ScanVerifyPage = () => {
   return (
     <div className="layout-container">
       <ProviderStaffSidebar activeItem="scan" isOpen={isSidebarOpen} />
-      {isSidebarOpen && <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />}
+      {isSidebarOpen && <div className="staff-sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />}
 
       <div className="body-row">
         <TopNav onMenuToggle={() => setIsSidebarOpen(p => !p)} isSidebarOpen={isSidebarOpen} />
-        <main className="main-content">
+        <main className="staff-main-content">
           <div className="progress-container">
             <div className="progress-steps">
               <div className={`step ${currentStep >= 1 ? 'active' : ''} ${currentStep > 1 ? 'success' : ''}`}>
