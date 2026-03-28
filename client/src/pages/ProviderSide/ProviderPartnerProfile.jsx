@@ -310,8 +310,8 @@ const activity = [
   { t: "Partner connected",      s: "GoodMe Solutions joined",  ts: "Jan 2024", dot: "g" },
 ];
 
-export default function PartnerProfile() {
-  const navigate = useNavigate();
+export default function ProviderPartnerProfile() {
+    const navigate = useNavigate();
    const { state } = useLocation();
     console.log("STATE:", state);  // add this
   console.log("PARTNER:", state?.partner);
@@ -343,7 +343,7 @@ export default function PartnerProfile() {
       </nav>
 
       <div className="page">
-        <div className="back-link fu fu1" onClick={() => navigate("/network")}>
+        <div className="back-link fu fu1" onClick={() => navigate("/provider/network")}>
           <Ico n="back" s={14} c="currentColor"/> Back to B2B Network
         </div>
 
@@ -458,7 +458,7 @@ export default function PartnerProfile() {
             <div>
               <div className="sec-hdr">
                 <div className="sec-title"><Ico n="doc" s={15} c={C.primary}/>Compliance Vault</div>
-                <span className="sec-action" onClick={() => navigate("/vault")}>View all</span>
+                <span className="sec-action">View all</span>
               </div>
               {vaultDocs.map((d, i) => (
                 <div className="doc-row" key={i}>
@@ -488,7 +488,7 @@ export default function PartnerProfile() {
                 <div className="sec-title"><Ico n="org" s={15} c={C.primary}/>Network Actions</div>
               </div>
               <div className="chip-grid">
-                <div className="chip" onClick={() => navigate("/service-request")}>
+                <div className="chip" onClick={() => showToast("Opening service request…")}>
                   <Ico n="booking" s={20} c="#2b9d4e"/>
                   <span className="chip-lbl">Request Service</span>
                 </div>

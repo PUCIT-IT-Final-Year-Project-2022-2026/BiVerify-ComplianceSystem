@@ -1,8 +1,16 @@
 import React from 'react';
 import { Infinity } from 'lucide-react'; 
+import { useNavigate } from "react-router-dom";
 import './LoginPage.css'; // Make sure this imports your CSS file
 
 export default function LoginPage() {
+   const navigate = useNavigate();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    navigate("/overview");  // navigates to ClientDashboard
+  };
+
   return (
     <div className="login-wrapper">
       <div className="auth-container">
@@ -27,7 +35,7 @@ export default function LoginPage() {
               <h1 className="form-title">Sign in</h1>
               <p className="form-subtitle">with your Biverify Account</p>
 
-              <form onSubmit={(e) => e.preventDefault()}>
+              <form onSubmit={handleSubmit}>
                 <div className="form-group">
                   <label className="form-label">Email Address</label>
                   <input type="email" className="form-input" placeholder="john@example.com" />

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const C = {
   primary:    "#2b9d4e",
@@ -294,6 +295,7 @@ function compCls(p) { return p < 50 ? "d" : p < 80 ? "w" : "ok"; }
 function compPctCls(p) { return p < 50 ? "cp-d" : p < 80 ? "cp-w" : "cp-ok"; }
 
 export default function B2BNetwork() {
+    const navigate = useNavigate();
   const [partners, setPartners]     = useState(INITIAL_PARTNERS);
   const [received, setReceived]     = useState(INITIAL_RECEIVED);
   const [pending, setPending]       = useState(INITIAL_PENDING);
@@ -522,7 +524,7 @@ export default function B2BNetwork() {
                     <span className={`comp-pct ${compPctCls(p.compliance)}`}>{p.compliance}%</span>
                   </div>
                   <div className="p-since">Since {p.since}</div>
-                  <button className="btn-view" onClick={()=>showToast(`Viewing ${p.name}`)}>
+                  <button className="btn-view" onClick={() => navigate(`/partner/${p.id}`, { state: { partner: p } })}>
                     <Ico n="eye" s={12} c={C.primary}/>View
                   </button>
                   <button className="btn-rm" onClick={()=>handleRemove(p.id, p.name)}>
