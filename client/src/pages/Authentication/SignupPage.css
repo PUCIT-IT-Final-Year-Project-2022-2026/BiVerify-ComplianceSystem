@@ -29,6 +29,7 @@ body {
     max-width: 1100px;
     height: auto;
     /* let it grow naturally */
+    max-height: calc(100vh - 80px);
     border-radius: 20px;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
     display: flex;
@@ -101,7 +102,7 @@ body {
     letter-spacing: 0.5px;
 }
 
-.step-tracker {
+.signup-step-tracker {
     display: flex;
     flex-direction: column;
     gap: 30px;
@@ -109,7 +110,7 @@ body {
     flex: 1;
 }
 
-.step-item {
+.signup-step-item {
     display: flex;
     gap: 20px;
     align-items: flex-start;
@@ -117,22 +118,22 @@ body {
     transition: opacity 0.3s ease;
 }
 
-.step-item.active {
+.signup-step-item.active {
     opacity: 1;
 }
 
-.step-item.completed {
+.signup-step-item.completed {
     opacity: 0.9;
 }
 
-.step-indicator {
+.signup-step-indicator {
     display: flex;
     flex-direction: column;
     align-items: center;
     position: relative;
 }
 
-.step-circle {
+.signup-step-circle {
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -148,19 +149,19 @@ body {
     position: relative;
 }
 
-.step-item.active .step-circle {
+.signup-step-item.active .signup-step-circle {
     background: #ffffff;
     color: #2b9d4e;
     border-color: #ffffff;
 }
 
-.step-item.completed .step-circle {
+.signup-step-item.completed .signup-step-circle {
     background: rgba(255, 255, 255, 0.2);
     border-color: #ffffff;
     color: #ffffff;
 }
 
-.step-line {
+.signup-step-line {
     position: absolute;
     top: 36px;
     width: 2px;
@@ -170,21 +171,21 @@ body {
     z-index: 1;
 }
 
-.step-item.completed .step-line {
+.signup-step-item.completed .signup-step-line {
     background: rgba(255, 255, 255, 0.8);
 }
 
-.step-content {
+.signup-step-content {
     padding-top: 6px;
 }
 
-.step-content h4 {
+.signup-step-content h4 {
     font-size: 15px;
     font-weight: 600;
     margin-bottom: 4px;
 }
 
-.step-content p {
+.signup-step-content p {
     font-size: 12px;
     font-weight: 400;
     opacity: 0.8;
@@ -205,7 +206,7 @@ body {
     display: flex;
     flex-direction: column;
     position: relative;
-    max-height: 90vh;
+    max-height: 100%;
 }
 
 .progress-bar-container {
@@ -309,7 +310,7 @@ body {
     flex-shrink: 0;
 }
 
-.step-counter {
+.signup-step-counter {
     font-size: 13px;
     color: #94a3b8;
     font-weight: 600;
@@ -317,14 +318,14 @@ body {
     letter-spacing: 1px;
 }
 
-.step-title {
+.signup-step-title {
     font-size: 32px;
     font-weight: 700;
     color: #1e293b;
     margin: 8px 0;
 }
 
-.step-subtitle {
+.signup-step-subtitle {
     font-size: 14px;
     color: #64748b;
     line-height: 1.5;
@@ -448,7 +449,7 @@ body {
         padding: 50px 50px;
     }
 
-    .step-title {
+    .signup-step-title {
         font-size: 26px;
     }
 }
@@ -480,7 +481,7 @@ body {
     }
 
     /* Turn step tracker into a horizontal scrollable row */
-    .step-tracker {
+    .signup-step-tracker {
         flex-direction: row;
         overflow-x: auto;
         padding-bottom: 8px;
@@ -489,11 +490,11 @@ body {
         scrollbar-width: none;
     }
 
-    .step-tracker::-webkit-scrollbar {
+    .signup-step-tracker::-webkit-scrollbar {
         display: none;
     }
 
-    .step-item {
+    .signup-step-item {
         flex-shrink: 0;
         flex-direction: column;
         align-items: center;
@@ -501,26 +502,26 @@ body {
         gap: 6px;
     }
 
-    .step-indicator {
+    .signup-step-indicator {
         flex-direction: row;
         align-items: center;
     }
 
-    .step-line {
+    .signup-step-line {
         display: none;
     }
 
-    .step-content {
+    .signup-step-content {
         padding-top: 0;
     }
 
-    .step-content h4 {
+    .signup-step-content h4 {
         font-size: 12px;
         font-weight: 600;
         white-space: nowrap;
     }
 
-    .step-content p {
+    .signup-step-content p {
         display: none;
     }
 
@@ -560,7 +561,7 @@ body {
         grid-column: span 1;
     }
 
-    .step-title {
+    .signup-step-title {
         font-size: 22px;
     }
 
@@ -595,13 +596,13 @@ body {
         padding: 20px 16px 16px;
     }
 
-    .step-circle {
+    .signup-step-circle {
         width: 30px;
         height: 30px;
         font-size: 13px;
     }
 
-    .step-content h4 {
+    .signup-step-content h4 {
         font-size: 11px;
     }
 
@@ -609,11 +610,11 @@ body {
         padding: 32px 16px 24px;
     }
 
-    .step-title {
+    .signup-step-title {
         font-size: 20px;
     }
 
-    .step-subtitle {
+    .signup-step-subtitle {
         font-size: 13px;
     }
 
@@ -638,11 +639,11 @@ body {
 
 /* Very small phones (≤ 360px) */
 @media (max-width: 360px) {
-    .step-content h4 {
+    .signup-step-content h4 {
         display: none;
     }
 
-    .step-circle {
+    .signup-step-circle {
         width: 28px;
         height: 28px;
         font-size: 12px;

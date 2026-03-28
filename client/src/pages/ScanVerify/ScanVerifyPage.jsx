@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './ScanVerifyPage.css';
+import ProviderStaffSidebar from '../../components/ProviderStaffSidebar';
 
 const Ico = ({ n, s = 15, c = "#fff" }) => {
   const icons = {
@@ -14,55 +15,6 @@ const Ico = ({ n, s = 15, c = "#fff" }) => {
   };
   return icons[n] || null;
 };
-
-const navSections = [
-  {
-    heading: "SERVICE PROVIDER",
-    items: [
-      { key: "jobs", icon: "jobs", label: "Current Jobs" },
-      { key: "scan", icon: "scan", label: "Scan & Verify" },
-    ],
-  },
-];
-
-const Sidebar = ({ activeItem, isOpen }) => (
-  <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
-    <div className="sidebar-header desktop-only">
-      <div className="logo-icon"><Ico n="shield" s={18} c="#fff" /></div>
-      <h1 className="logo-text">Bi-Verify</h1>
-    </div>
-    <div className="menu-section">
-      {navSections.map((sec, si) => (
-        <div key={si}>
-          <p className="menu-title">{sec.heading}</p>
-          <ul className="menu-list">
-            {sec.items.map((item) => (
-              <li key={item.key} className={`menu-item ${activeItem === item.key ? 'active' : ''}`}>
-                <div className="menu-icon">
-                  <Ico n={item.icon} s={16} c={activeItem === item.key ? "#2b9d4e" : "rgba(255,255,255,0.85)"} />
-                </div>
-                <span>{item.label}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-    <div className="sidebar-footer">
-      <div className="user-profile">
-        <div className="avatar">s</div>
-        <div className="user-info">
-          <p className="user-name">shawn</p>
-          <p className="user-role">Provider</p>
-        </div>
-      </div>
-      <button className="logout-button">
-        <Ico n="logout" s={15} c="white" />
-        Logout
-      </button>
-    </div>
-  </aside>
-);
 
 const TopNav = ({ onMenuToggle, isSidebarOpen }) => (
   <nav className="top-navbar">
@@ -108,12 +60,12 @@ const ScanVerifyPage = () => {
 
   return (
     <div className="layout-container">
-      <Sidebar activeItem="scan" isOpen={isSidebarOpen} />
-      {isSidebarOpen && <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />}
+      <ProviderStaffSidebar activeItem="scan" isOpen={isSidebarOpen} />
+      {isSidebarOpen && <div className="staff-sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />}
 
       <div className="body-row">
         <TopNav onMenuToggle={() => setIsSidebarOpen(p => !p)} isSidebarOpen={isSidebarOpen} />
-        <main className="main-content">
+        <main className="staff-main-content">
           <div className="progress-container">
             <div className="progress-steps">
               <div className={`step ${currentStep >= 1 ? 'active' : ''} ${currentStep > 1 ? 'success' : ''}`}>

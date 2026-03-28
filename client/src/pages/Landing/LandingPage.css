@@ -5,7 +5,7 @@ html,
 body {
   height: auto;
   /* Let the body height adjust to content */
-  overflow: visible;
+  overflow-x: hidden;
 }
 
 * {
@@ -26,6 +26,7 @@ body {
   justify-content: center;
   align-items: center;
   padding: 20px;
+  overflow-x: hidden;
 }
 
 .landing-container {
@@ -72,7 +73,7 @@ body {
   color: #2b9d4e;
 }
 
-.main-content {
+.landing-main-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -254,7 +255,7 @@ body {
     min-height: auto;
   }
 
-  .main-content {
+  .landing-main-content {
     flex-direction: column;
     text-align: center;
     gap: 40px;

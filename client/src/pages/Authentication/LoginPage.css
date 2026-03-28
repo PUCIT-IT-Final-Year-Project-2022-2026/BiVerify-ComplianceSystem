@@ -1,5 +1,7 @@
 /* Color Palette from your guidelines */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -27,7 +29,8 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #f0fdf4; /* Fallback for the background */
+  background-color: #f0fdf4;
+  /* Fallback for the background */
   color: var(--dark-text);
   margin: 0;
   padding: 0;
@@ -41,20 +44,26 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 40px; /* Increased padding to give more gap from screen edges */
+  padding: 40px;
+  /* Increased padding to give more gap from screen edges */
   box-sizing: border-box;
 }
 
 /* Base Container styles */
 .auth-container {
   display: flex;
-  width: 90%; /* Use percentage so it doesn't stick to sides on smaller screens */
-  max-width: 1000px; /* Slightly narrower */
-  height: 580px; /* Slightly shorter */
+  width: 90%;
+  /* Use percentage so it doesn't stick to sides on smaller screens */
+  max-width: 1000px;
+  /* Slightly narrower */
+  height: 580px;
+  /* Slightly shorter */
   background-color: var(--page-bg);
-  border-radius: 24px; /* More rounded for a premium feel */
+  border-radius: 24px;
+  /* More rounded for a premium feel */
   overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08); /* Stronger shadow to make it feel floating */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  /* Stronger shadow to make it feel floating */
 }
 
 /* LEFT SIDEBAR */
@@ -198,24 +207,29 @@ body {
   .login-wrapper {
     padding: 0;
   }
+
   .auth-container {
     flex-direction: column;
     margin: 0;
     border-radius: 0;
     min-height: 100vh;
   }
+
   .sidebar {
     width: 100%;
     border-radius: 0;
     padding: 30px;
     min-height: auto;
   }
+
   .sidebar-footer {
     display: none;
   }
+
   .logo-container {
     margin-bottom: 30px;
   }
+
   .main-content {
     padding: 30px 20px;
   }

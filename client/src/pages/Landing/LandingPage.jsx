@@ -1,13 +1,15 @@
 // LandingPage.jsx
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './LandingPage.css';
 
 const LandingPage = () => {
+  const navigate = useNavigate();
   return (
     <div className="landing-wrapper">
       <div className="landing-container">
 
-        <main className="main-content">
+        <main className="landing-main-content">
           <div className="text-section">
             <h1 className="main-title">
               <span className="green-text">Bi-Verify</span><br />
@@ -16,8 +18,8 @@ const LandingPage = () => {
             <p className="description">
               Securely verify outsourced services with our app-free dual QR validation mechanism. Ensuring transparency and preventing fraud between organizations and providers, all through a web platform.
             </p>
-            <button className="Login-btn">Sign in</button>
-            <button className="Signup-btn">Sign up</button>
+            <button className="Login-btn" onClick={() => navigate('/login')}>Sign in</button>
+            <button className="Signup-btn" onClick={() => navigate('/signup')}>Sign up</button>
 
             <div className="social-links">
               <span className="follow-text">FOLLOW</span>

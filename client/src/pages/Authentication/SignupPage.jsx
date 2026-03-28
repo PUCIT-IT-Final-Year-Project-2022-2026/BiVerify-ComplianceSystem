@@ -214,9 +214,9 @@ const SignupPage = () => {
             <div className={`form-step-container ${isTransitioning ? 'fade-out' : 'fade-in'}`}>
                 {/* Step Header */}
                 <div className="form-header">
-                    <span className="step-counter">Step {currentStep}/{totalSteps}</span>
-                    <h2 className="step-title">{activeSteps[currentStep - 1].title}</h2>
-                    <p className="step-subtitle">{activeSteps[currentStep - 1].subtitle}</p>
+                    <span className="signup-step-counter">Step {currentStep}/{totalSteps}</span>
+                    <h2 className="signup-step-title">{activeSteps[currentStep - 1].title}</h2>
+                    <p className="signup-step-subtitle">{activeSteps[currentStep - 1].subtitle}</p>
                 </div>
 
                 {/* --- STEP 1 (Common but labels differ slightly) --- */}
@@ -425,22 +425,22 @@ const SignupPage = () => {
                         <h3>Bi-Verify</h3>
                     </div>
 
-                    <div className="step-tracker">
+                    <div className="signup-step-tracker">
                         {activeSteps.map((step, index) => {
                             const stepNumber = index + 1;
                             const isActive = currentStep === stepNumber;
                             const isCompleted = currentStep > stepNumber;
 
                             return (
-                                <div key={index} className={`step-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}>
-                                    <div className="step-indicator">
-                                        <div className="step-circle">
+                                <div key={index} className={`signup-step-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}>
+                                    <div className="signup-step-indicator">
+                                        <div className="signup-step-circle">
                                             {isCompleted ? '✓' : stepNumber}
                                         </div>
                                         {/* Connecting line to next element */}
-                                        {index < activeSteps.length - 1 && <div className="step-line"></div>}
+                                        {index < activeSteps.length - 1 && <div className="signup-step-line"></div>}
                                     </div>
-                                    <div className="step-content">
+                                    <div className="signup-step-content">
                                         <h4>{step.title}</h4>
                                         <p>{step.subtitle}</p>
                                     </div>
