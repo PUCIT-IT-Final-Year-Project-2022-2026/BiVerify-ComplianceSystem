@@ -109,7 +109,7 @@ export default function App() {
         <Route path="/provider/scan" element={<ScanVerifyPage />} />
 
         {/* ── Global Catch-All ── */}
-        <Route path="/" element={<CurrentJobs />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
 
 
