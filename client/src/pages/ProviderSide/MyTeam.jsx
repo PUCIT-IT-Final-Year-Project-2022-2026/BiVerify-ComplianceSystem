@@ -1,6 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { UserPlus, Users, Trash2, Mail, Shield, Eye, EyeOff } from 'lucide-react';
+import { team as teamApi, apiErrorMessage } from '../../api/client';
 import './MyTeam.css';
+
+const ROLE_LABEL = {
+  provider_staff: 'Provider Staff',
+  client_staff: 'Client Staff',
+  compliance_officer: 'Compliance Officer',
+  org_admin: 'Org Admin',
+};
 
 // ── Icons Helper ──
 const Ico = ({ n, s = 15, c = "#fff" }) => {
@@ -44,15 +52,11 @@ const TopNavbar = ({ title, icon }) => {
 
 export default function MyTeam() {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [teamMembers, setTeamMembers] = useState([
-    { name: 'Sarah Ahmed', email: 'sarah@example.com', role: 'Site Inspector', status: 'Active' },
-    { name: 'John Doe', email: 'john.doe@example.com', role: 'Site Inspector', status: 'Active' },
-    { name: 'David Smith', email: 'david@example.com', role: 'Admin', status: 'Inactive' },
-    { name: 'Maria Garcia', email: 'm.garcia@example.com', role: 'Site Inspector', status: 'Active' },
-    { name: 'Robert Wilson', email: 'r.wilson@example.com', role: 'Editor', status: 'Active' },
-    { name: 'Jessica Chen', email: 'j.chen@example.com', role: 'Supervisor', status: 'Active' }
-  ]);
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   // Form state
   const [fullName, setFullName] = useState('');
@@ -60,22 +64,43 @@ export default function MyTeam() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleCreateAccount = (e) => {
+  const loadTeam = () => {
+    setLoading(true);
+    teamApi.list()
+      .then((data) => setTeamMembers(data))
+      .catch((err) => setError(apiErrorMessage(err)))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { loadTeam(); }, []);
+
+  const handleCreateAccount = async (e) => {
     e.preventDefault();
-    if (fullName && email) {
-      setTeamMembers([...teamMembers, { name: fullName, email, role: 'Site Inspector', status: 'Active' }]);
+    setError('');
+    if (!fullName || !email || !password) return;
+    setSubmitting(true);
+    try {
+      await teamApi.create({ fullName, email, password });
       setIsFormOpen(false);
       setShowSuccess(true);
-      setFullName('');
-      setEmail('');
-      setPassword('');
+      setFullName(''); setEmail(''); setPassword('');
+      loadTeam();
+      setTimeout(() => setShowSuccess(false), 4000);
+    } catch (err) {
+      setError(apiErrorMessage(err));
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleDelete = (index) => {
-    const newMembers = [...teamMembers];
-    newMembers.splice(index, 1);
-    setTeamMembers(newMembers);
+  const handleDelete = async (id) => {
+    if (!window.confirm('Remove this team member?')) return;
+    try {
+      await teamApi.remove(id);
+      loadTeam();
+    } catch (err) {
+      setError(apiErrorMessage(err));
+    }
   };
 
   return (
@@ -98,6 +123,11 @@ export default function MyTeam() {
             <div className="success-banner">
               <Shield size={18} className="success-icon" />
               <span>Staff account created successfully!</span>
+            </div>
+          )}
+          {error && (
+            <div style={{ padding: '10px 14px', background: '#fee2e2', color: '#991b1b', borderRadius: 8, marginBottom: 16, fontSize: 13 }}>
+              {error}
             </div>
           )}
           {isFormOpen ? (
@@ -126,13 +156,13 @@ export default function MyTeam() {
                   </div>
                   <div className="form-group">
                     <label>Assigned Role</label>
-                    <input type="text" value="Client" disabled className="input-field disabled-field" />
+                    <input type="text" value="Provider Staff" disabled className="input-field disabled-field" />
                     <span className="field-hint">Auto-assigned based on your organization type.</span>
                   </div>
                 </div>
                 <div className="form-actions">
                   <button type="button" className="btn-cancel" onClick={() => setIsFormOpen(false)}>Cancel</button>
-                  <button type="submit" className="btn-create">Create Account</button>
+                  <button type="submit" className="btn-create" disabled={submitting}>{submitting ? 'Creating…' : 'Create Account'}</button>
                 </div>
               </form>
             </div>
@@ -144,7 +174,9 @@ export default function MyTeam() {
                 <div className="col-status">Status</div>
                 <div className="col-actions">Actions</div>
               </div>
-              {teamMembers.length === 0 ? (
+              {loading ? (
+                <div className="empty-state"><p className="empty-text">Loading…</p></div>
+              ) : teamMembers.length === 0 ? (
                 <div className="empty-state">
                   <div className="empty-icon-wrapper">
                     <Users size={48} className="empty-icon" />
@@ -153,17 +185,20 @@ export default function MyTeam() {
                 </div>
               ) : (
                 <div className="table-body">
-                  {teamMembers.map((member, index) => (
-                    <div className="table-row" key={index}>
-                      <div className="col-member member-info">
-                        <span className="member-name">{member.name}</span>
-                        <span className="member-email"><Mail size={14} />{member.email}</span>
+                  {teamMembers.map((member) => {
+                    const status = member.isActive === false ? 'Inactive' : 'Active';
+                    return (
+                      <div className="table-row" key={member.id}>
+                        <div className="col-member member-info">
+                          <span className="member-name">{member.fullName}</span>
+                          <span className="member-email"><Mail size={14} />{member.email}</span>
+                        </div>
+                        <div className="col-role"><span className="role-badge">{ROLE_LABEL[member.role] || member.role}</span></div>
+                        <div className="col-status"><span className={`status-badge ${status.toLowerCase()}`}><span className="status-dot"></span>{status}</span></div>
+                        <div className="col-actions"><button className="btn-icon" onClick={() => handleDelete(member.id)}><Trash2 size={18} /></button></div>
                       </div>
-                      <div className="col-role"><span className="role-badge">{member.role}</span></div>
-                      <div className="col-status"><span className={`status-badge ${member.status?.toLowerCase()}`}><span className="status-dot"></span>{member.status}</span></div>
-                      <div className="col-actions"><button className="btn-icon" onClick={() => handleDelete(index)}><Trash2 size={18} /></button></div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

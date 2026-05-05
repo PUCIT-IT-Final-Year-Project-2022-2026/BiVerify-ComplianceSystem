@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import ComplianceSidebar from "../../components/ComplianceSidebar";
+import { scan, apiErrorMessage } from "../../api/client";
 
 const G = "#2b9d4e";
 const GD = "#1f7a3b";
@@ -16,10 +17,23 @@ const Ico = ({ n, s = 15, c = "#fff" }) => {
 function VerifyProvider() {
   const [currentStep, setCurrentStep] = useState(1);
   const [scanResult, setScanResult]   = useState(null);
+  const [verifyError, setVerifyError] = useState("");
   const [cameraOn, setCameraOn]       = useState(false);
   const [scannerInit, setScannerInit] = useState(false);
   const scannerRef   = useRef(null);
   const fileInputRef = useRef(null);
+
+  const handleDecoded = async (decodedText) => {
+    await stopCamera();
+    setVerifyError("");
+    try {
+      const res = await scan.booking(decodedText);
+      setScanResult(res);
+      setCurrentStep(2);
+    } catch (err) {
+      setVerifyError(apiErrorMessage(err));
+    }
+  };
 
   useEffect(() => {
     if (cameraOn && !scannerInit) {
@@ -27,7 +41,7 @@ function VerifyProvider() {
       html5QrCode.start(
         { facingMode: "environment" },
         { fps: 5, qrbox: 250 },
-        (decodedText) => { setScanResult(decodedText); stopCamera(); handleNextStep(); },
+        (decodedText) => { handleDecoded(decodedText); },
         () => {}
       ).then(() => setScannerInit(true)).catch(console.error);
       scannerRef.current = html5QrCode;
@@ -38,19 +52,19 @@ function VerifyProvider() {
         setScannerInit(false);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cameraOn, scannerInit]);
 
-  const stopCamera    = () => { if (scannerRef.current) scannerRef.current.stop().catch(() => {}); setCameraOn(false); };
-  const handleNextStep = () => setCurrentStep(2);
-  const handleReset    = () => { setCurrentStep(1); setScanResult(null); };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => { setScanResult(ev.target.result); handleNextStep(); };
-      reader.readAsDataURL(file);
+  const stopCamera    = async () => {
+    if (scannerRef.current) {
+      try { await scannerRef.current.stop(); } catch {}
     }
+    setCameraOn(false);
+  };
+  const handleReset    = () => { setCurrentStep(1); setScanResult(null); setVerifyError(""); };
+
+  const handleFileChange = (_e) => {
+    // Image-file scanning not wired; user should use camera.
   };
 
   return (
@@ -161,6 +175,12 @@ function VerifyProvider() {
                   </div>
                 </div>
               )}
+
+              {verifyError && (
+                <div style={{ marginTop: 16, padding: "12px 16px", background: "#fee2e2", color: "#991b1b", borderRadius: 10, fontSize: 13 }}>
+                  {verifyError}
+                </div>
+              )}
             </>
 
           ) : (
@@ -173,8 +193,10 @@ function VerifyProvider() {
 
               {scanResult && (
                 <div style={{ background: "rgba(43,157,78,0.06)", border: "1px solid rgba(43,157,78,0.15)", borderRadius: 12, padding: "14px 20px", marginBottom: 24, textAlign: "left" }}>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Scanned Data</p>
-                  <p style={{ fontSize: 13, color: "#1A1D23", fontFamily: "'DM Mono', monospace", wordBreak: "break-all" }}>{scanResult.length > 100 ? scanResult.slice(0,100)+"..." : scanResult}</p>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Purchase Order</p>
+                  <p style={{ fontSize: 14, color: "#1A1D23", fontFamily: "'DM Mono', monospace", marginBottom: 8 }}>{scanResult.poNumber || "—"}</p>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Completed At</p>
+                  <p style={{ fontSize: 13, color: "#1A1D23" }}>{scanResult.completedAt ? new Date(scanResult.completedAt).toLocaleString() : "—"}</p>
                 </div>
               )}
 

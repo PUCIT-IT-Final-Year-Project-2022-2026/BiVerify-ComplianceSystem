@@ -167,6 +167,8 @@ create_collection("service_requests", {
         "clientOrgId":   {"bsonType": "objectId", "description": "FK → organizations (client)"},
         "providerOrgId": {"bsonType": "objectId", "description": "FK → organizations (provider)"},
         "requestedBy":   {"bsonType": "objectId", "description": "FK → users"},
+        "assignedStaffId": {"bsonType": "objectId", "description": "FK → users (provider_staff who will perform the job)"},
+        "siteLocationId": {"bsonType": "objectId", "description": "FK → site_locations"},
         "serviceType":   {"bsonType": "string"},
         "description":   {"bsonType": "string"},
         "location":      {"bsonType": "string"},
@@ -204,12 +206,34 @@ create_collection("purchase_orders", {
         "issuedAt":    {"bsonType": "date"},
         "paidAt":      {"bsonType": "date"},
         "notes":       {"bsonType": "string"},
+        "bookingToken": {"bsonType": "string", "description": "Random opaque token; encoded in the booking QR"},
     }
 })
 
+create_index("purchase_orders", [("bookingToken", ASCENDING)], unique=True, sparse=True, name="idx_po_booking_token")
 create_index("purchase_orders", [("poNumber",  ASCENDING)], unique=True, name="idx_po_number")
 create_index("purchase_orders", [("requestId", ASCENDING)], unique=True, name="idx_po_request")
 create_index("purchase_orders", [("status",    ASCENDING)], name="idx_po_status")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  5b. SITE LOCATIONS (static QR codes posted at client sites)
+# ══════════════════════════════════════════════════════════════════════════════
+create_collection("site_locations", {
+    "bsonType": "object",
+    "required": ["orgId", "label", "siteToken", "isActive", "createdAt"],
+    "properties": {
+        "orgId":     {"bsonType": "objectId", "description": "FK → organizations (client)"},
+        "label":     {"bsonType": "string",   "description": "Human-readable site name"},
+        "siteToken": {"bsonType": "string",   "description": "Random opaque token; encoded in the static QR"},
+        "isActive":  {"bsonType": "bool"},
+        "createdAt": {"bsonType": "date"},
+        "createdBy": {"bsonType": "objectId", "description": "FK → users"},
+    }
+})
+
+create_index("site_locations", [("siteToken", ASCENDING)], unique=True, name="idx_site_token")
+create_index("site_locations", [("orgId", ASCENDING), ("isActive", ASCENDING)], name="idx_site_org_active")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -219,16 +243,24 @@ create_collection("scan_jobs", {
     "bsonType": "object",
     "required": ["scannedBy", "status", "scannedAt"],
     "properties": {
-        "requestId":    {"bsonType": "objectId", "description": "FK → service_requests (optional)"},
-        "scannedBy":    {"bsonType": "objectId", "description": "FK → users (compliance officer)"},
-        "providerOrgId":{"bsonType": "objectId", "description": "FK → organizations (resolved from QR)"},
-        "qrPayload":    {"bsonType": "string",   "description": "Raw QR string scanned"},
-        "result":       {"bsonType": "string",   "description": "Resolved info / pass message"},
+        "requestId":    {"bsonType": "objectId", "description": "FK → service_requests"},
+        "poId":         {"bsonType": "objectId", "description": "FK → purchase_orders"},
+        "scannedBy":    {"bsonType": "objectId", "description": "FK → users (legacy: first scanner)"},
+        "providerOrgId":{"bsonType": "objectId", "description": "FK → organizations (provider)"},
+        "clientOrgId":  {"bsonType": "objectId", "description": "FK → organizations (client)"},
+        "assignedStaffId": {"bsonType": "objectId", "description": "FK → users (provider_staff)"},
+        "siteLocationId":  {"bsonType": "objectId", "description": "FK → site_locations"},
+        "qrPayload":    {"bsonType": "string"},
+        "result":       {"bsonType": "string"},
         "status":       {"bsonType": "string",
-                         "enum": ["verified", "failed", "pending"]},
+                         "enum": ["verified", "failed", "pending", "in_progress", "completed"]},
         "failReason":   {"bsonType": "string"},
         "scannedAt":    {"bsonType": "date"},
-        "location":     {"bsonType": "string",   "description": "On-site location note"},
+        "startedAt":    {"bsonType": "date",   "description": "Set when site QR scan succeeds"},
+        "startedBy":    {"bsonType": "objectId", "description": "FK → users (provider_staff)"},
+        "completedAt":  {"bsonType": "date",   "description": "Set when booking QR scan succeeds"},
+        "completedBy":  {"bsonType": "objectId", "description": "FK → users (client_staff / org_admin)"},
+        "location":     {"bsonType": "string"},
     }
 })
 

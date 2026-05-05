@@ -1,5 +1,12 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { getUser } from '../api/client';
+
+const ROLE_LABEL = {
+    super_admin: 'Super Admin', org_admin: 'Org Admin',
+    provider_staff: 'Provider Staff', compliance_officer: 'Compliance Officer',
+    client_staff: 'Client Staff',
+};
 
 const Ico = ({ n, s = 15, c = "#fff" }) => {
     const icons = {
@@ -25,7 +32,9 @@ const navSections = [
     },
 ];
 
-const ProviderStaffSideBar = ({ activeItem, isOpen }) => (
+const ProviderStaffSideBar = ({ activeItem, isOpen }) => {
+    const user = getUser();
+    return (
     <aside className={`staff-sidebar ${isOpen ? 'open' : ''}`}>
         <div className="staff-sidebar-header desktop-only">
             <div className="staff-logo-icon"><Ico n="shield" s={18} c="#fff" /></div>
@@ -59,18 +68,26 @@ const ProviderStaffSideBar = ({ activeItem, isOpen }) => (
         </div>
         <div className="staff-sidebar-footer">
             <div className="user-profile">
-                <div className="avatar">s</div>
+                <div className="avatar">{(user?.fullName || '?').charAt(0).toUpperCase()}</div>
                 <div className="user-info">
-                    <p className="user-name">shawn</p>
-                    <p className="user-role">Provider</p>
+                    <p className="user-name">{user?.fullName || 'Guest'}</p>
+                    <p className="user-role">{ROLE_LABEL[user?.role] || user?.role || ''}</p>
                 </div>
             </div>
-            <button className="logout-button">
+            <button
+                className="logout-button"
+                onClick={() => {
+                    localStorage.removeItem("biverify_token");
+                    localStorage.removeItem("biverify_user");
+                    window.location.assign("/login");
+                }}
+            >
                 <Ico n="logout" s={15} c="white" />
                 Logout
             </button>
         </div>
     </aside>
-);
+    );
+};
 
 export default ProviderStaffSideBar;

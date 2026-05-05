@@ -1,8 +1,39 @@
-import React from 'react';
-import { Infinity } from 'lucide-react'; 
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Infinity } from 'lucide-react';
+import { auth, saveSession, apiErrorMessage } from '../../api/client';
 import './LoginPage.css'; // Make sure this imports your CSS file
 
+const ROLE_HOME = {
+  org_admin: '/overview',
+  client_staff: '/compliance',
+  compliance_officer: '/verify-provider',
+  provider_staff: '/provider/jobs',
+  super_admin: '/admin-dashboard',
+};
+
 export default function LoginPage() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSubmitting(true);
+    try {
+      const { token, user } = await auth.login(email.trim(), password);
+      saveSession(token, user);
+      navigate(ROLE_HOME[user.role] || '/overview', { replace: true });
+    } catch (err) {
+      setError(apiErrorMessage(err));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="login-wrapper">
       <div className="auth-container">
@@ -27,27 +58,49 @@ export default function LoginPage() {
               <h1 className="form-title">Sign in</h1>
               <p className="form-subtitle">with your Biverify Account</p>
 
-              <form onSubmit={(e) => e.preventDefault()}>
+              <form onSubmit={onSubmit}>
                 <div className="form-group">
                   <label className="form-label">Email Address</label>
-                  <input type="email" className="form-input" placeholder="john@example.com" />
+                  <input
+                    type="email"
+                    className="form-input"
+                    placeholder="john@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
                 </div>
 
                 <div className="form-group" style={{ marginBottom: '8px' }}>
                   <label className="form-label">Password</label>
-                  <input type="password" className="form-input" placeholder="••••••••" />
+                  <input
+                    type="password"
+                    className="form-input"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
                 </div>
-                
+
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
                   <a href="/forgot-password" style={{ fontSize: '13px', color: 'var(--primary-green)', textDecoration: 'none', fontWeight: 500 }}>
                     Forgot Password?
                   </a>
                 </div>
 
-                <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '8px' }}>Sign in</button>
+                {error && (
+                  <div style={{ marginBottom: 16, padding: '10px 12px', background: '#fee2e2', color: '#991b1b', borderRadius: 8, fontSize: 13 }}>
+                    {error}
+                  </div>
+                )}
+
+                <button type="submit" disabled={submitting} className="btn-primary" style={{ width: '100%', marginTop: '8px', opacity: submitting ? 0.7 : 1 }}>
+                  {submitting ? 'Signing in…' : 'Sign in'}
+                </button>
                 
                 <div style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: 'var(--muted-text)' }}>
-                  Don't have an account? <a href="#" style={{ color: 'var(--primary-green)', textDecoration: 'none', fontWeight: 600 }}>Sign up here</a>
+                  Don't have an account? <a href="/signup" style={{ color: 'var(--primary-green)', textDecoration: 'none', fontWeight: 600 }}>Sign up here</a>
                 </div>
               </form>
             </div>

@@ -1,5 +1,12 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { getUser } from "../api/client";
+
+const ROLE_LABEL = {
+  super_admin: "Super Admin", org_admin: "Org Admin",
+  provider_staff: "Provider Staff", compliance_officer: "Compliance Officer",
+  client_staff: "Client Staff",
+};
 
 const G      = "#2b9d4e";   // sidebar background
 const GD     = "#1f7a3b";   // icon box
@@ -7,9 +14,10 @@ const BORDER = "#174f28";   // darker border — separates sidebar from navbar
 
 export default function AdminSidebar() {
   const navigate = useNavigate();
+  const user = getUser();
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("biverify_token"); localStorage.removeItem("biverify_user");
     navigate("/login");
   };
 
@@ -65,8 +73,8 @@ export default function AdminSidebar() {
             fontWeight: 700, fontSize: 15, color: "#fff",
           }}>S</div>
           <div>
-            <p style={{ fontSize: 13.5, fontWeight: 600, color: "#fff", margin: 0 }}>Profile</p>
-            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", margin: 0 }}>Admin</p>
+            <p style={{ fontSize: 13.5, fontWeight: 600, color: "#fff", margin: 0 }}>{user?.fullName || "Guest"}</p>
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", margin: 0 }}>{ROLE_LABEL[user?.role] || user?.role || ""}</p>
           </div>
         </div>
 
