@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { auth as authApi, saveSession, apiErrorMessage } from '../../api/client';
+import api from '../../api/client';
 import './SignupPage.css';
 
 const SignupPage = () => {
+    const navigate = useNavigate();
     // Role Toggle State
     const [role, setRole] = useState('provider'); // 'provider' or 'client'
     const [currentStep, setCurrentStep] = useState(1);
@@ -130,72 +134,27 @@ const SignupPage = () => {
     };
 
     const handleSubmit = async () => {
-        if (validateStep()) {
-            console.log('Final Form Data Submitted: ', { role, ...formData });
-
-            try {
-                // Create FormData for multipart/form-data request
-                const apiFormData = new FormData();
-
-                // Add role
-                apiFormData.append('role', role);
-
-                // Add common fields
-                apiFormData.append('fullName', formData.fullName);
-                apiFormData.append('email', formData.email);
-                apiFormData.append('phone', formData.phone);
-                apiFormData.append('password', formData.password);
-
-                // Add role specific fields
-                if (role === 'provider') {
-                    const providerFields = [
-                        'companyName', 'regNumber', 'providerAddress',
-                        'providerCity', 'providerCountry', 'providerWebsite',
-                        'serviceType', 'licenseNumber', 'certType', 'expiryDate'
-                    ];
-
-                    providerFields.forEach(field => {
-                        if (formData[field]) {
-                            apiFormData.append(field, formData[field]);
-                        }
-                    });
-
-                    if (formData.certificateFile) {
-                        apiFormData.append('certificateFile', formData.certificateFile);
-                    }
-                } else if (role === 'client') {
-                    const clientFields = [
-                        'orgName', 'industryType', 'clientAddress',
-                        'clientCity', 'clientCountry', 'contactPerson',
-                        'contactRole', 'department', 'clientWebsite'
-                    ];
-
-                    clientFields.forEach(field => {
-                        if (formData[field]) {
-                            apiFormData.append(field, formData[field]);
-                        }
-                    });
-                }
-
-                const response = await fetch('http://localhost:8000/api/auth/signup', {
-                    method: 'POST',
-                    body: apiFormData, // Fetch sets the Content-Type automatically for FormData
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    alert("Account Created Successfully!");
-                    console.log("Success:", data);
-                    // TODO: Proceed to login or dashboard
-                } else {
-                    const errorData = await response.json();
-                    alert(`Signup Failed: ${errorData.detail || 'Unknown error'}`);
-                    console.error("Error:", errorData);
-                }
-            } catch (error) {
-                console.error("Network Error:", error);
-                alert("Network error. Please try again.");
-            }
+        if (!validateStep()) return;
+        try {
+            const payload = {
+                orgType: role,                 // "provider" | "client"
+                orgName: role === 'provider' ? formData.companyName : formData.orgName,
+                adminFullName: formData.fullName,
+                adminEmail: formData.email,
+                phone: formData.phone,
+                password: formData.password,
+                address: role === 'provider' ? formData.providerAddress : formData.clientAddress,
+                city: role === 'provider' ? formData.providerCity : formData.clientCity,
+                country: role === 'provider' ? formData.providerCountry : formData.clientCountry,
+                industry: formData.industryType || '',
+                serviceType: formData.serviceType || '',
+            };
+            const { data } = await api.post('/api/auth/register-org', payload);
+            saveSession(data.token, data.user);
+            // Org self-signups land on org_admin dashboard
+            navigate(role === 'provider' ? '/provider/overview' : '/overview', { replace: true });
+        } catch (err) {
+            alert(`Signup failed: ${apiErrorMessage(err)}`);
         }
     };
 

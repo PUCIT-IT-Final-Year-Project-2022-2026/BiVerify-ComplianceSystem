@@ -1,5 +1,12 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { getUser } from "../api/client";
+
+const ROLE_LABEL = {
+  super_admin: "Super Admin", org_admin: "Org Admin",
+  provider_staff: "Provider Staff", compliance_officer: "Compliance Officer",
+  client_staff: "Client Staff",
+};
 
 import {
   FaShieldAlt,
@@ -17,9 +24,10 @@ const BORDER = "#174f28";   // darker border — separates sidebar from navbar
 
 export default function ComplianceSidebar() {
   const navigate = useNavigate();
+  const user = getUser();
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("biverify_token"); localStorage.removeItem("biverify_user");
     navigate("/login");
   };
 
@@ -106,7 +114,11 @@ export default function ComplianceSidebar() {
           color: "rgba(255,255,255,0.85)", fontSize: 13.5, fontWeight: 500,
           marginBottom: 6,
         }}>
-          <FaUser style={{ fontSize: 14, flexShrink: 0 }} /> Client
+          <FaUser style={{ fontSize: 14, flexShrink: 0 }} />
+          <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
+            <span>{user?.fullName || "Guest"}</span>
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{ROLE_LABEL[user?.role] || user?.role || ""}</span>
+          </div>
         </div>
 
         <div

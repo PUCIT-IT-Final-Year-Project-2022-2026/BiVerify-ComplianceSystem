@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import RequireAuth from "./api/RequireAuth.jsx";
 import ClientSidebar from "./components/ClientSidebar.jsx";
 import ProviderSidebar from "./components/ProviderSidebar.jsx";
 import ProviderStaffSidebar from "./components/ProviderStaffSidebar.jsx";
@@ -78,35 +79,35 @@ export default function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        {/* ── Client Dashboard Routes ── */}
-        <Route path="/overview" element={<DashboardLayout><ClientDashboard /></DashboardLayout>} />
-        <Route path="/network" element={<DashboardLayout><B2BNetwork /></DashboardLayout>} />
-        <Route path="/Bookings" element={<DashboardLayout><ServiceBookings /></DashboardLayout>} />
-        <Route path="/vault" element={<DashboardLayout><ComplianceVault /></DashboardLayout>} />
-        <Route path="/team" element={<DashboardLayout><MyTeamClient /></DashboardLayout>} />
-        <Route path="/audit" element={<DashboardLayout><SystemAuditLogsClient /></DashboardLayout>} />
-        <Route path="/settings" element={<DashboardLayout><OrganizationSettingsClient /></DashboardLayout>} />
+        {/* ── Client Org Admin Routes ── */}
+        <Route path="/overview" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><ClientDashboard /></DashboardLayout></RequireAuth>} />
+        <Route path="/network" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><B2BNetwork /></DashboardLayout></RequireAuth>} />
+        <Route path="/Bookings" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><ServiceBookings /></DashboardLayout></RequireAuth>} />
+        <Route path="/vault" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><ComplianceVault /></DashboardLayout></RequireAuth>} />
+        <Route path="/team" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><MyTeamClient /></DashboardLayout></RequireAuth>} />
+        <Route path="/audit" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><SystemAuditLogsClient /></DashboardLayout></RequireAuth>} />
+        <Route path="/settings" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><OrganizationSettingsClient /></DashboardLayout></RequireAuth>} />
 
-        {/* ── Provider Dashboard Routes ── */}
-        <Route path="/provider/overview" element={<DashboardLayout><ServiceProviderDashboard /></DashboardLayout>} />
-        <Route path="/provider/network" element={<DashboardLayout><ProviderB2BNetwork /></DashboardLayout>} />
-        <Route path="/provider/incoming-requests" element={<DashboardLayout><IncomingRequests /></DashboardLayout>} />
-        <Route path="/provider/certifications" element={<DashboardLayout><ComplianceDocuments /></DashboardLayout>} />
-        <Route path="/provider/team" element={<DashboardLayout><MyTeamProvider /></DashboardLayout>} />
-        <Route path="/provider/audit" element={<DashboardLayout><SystemAuditLogsProvider /></DashboardLayout>} />
-        <Route path="/provider/settings" element={<DashboardLayout><OrganizationSettingsProvider /></DashboardLayout>} />
+        {/* ── Provider Org Admin Routes ── */}
+        <Route path="/provider/overview" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><ServiceProviderDashboard /></DashboardLayout></RequireAuth>} />
+        <Route path="/provider/network" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><ProviderB2BNetwork /></DashboardLayout></RequireAuth>} />
+        <Route path="/provider/incoming-requests" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><IncomingRequests /></DashboardLayout></RequireAuth>} />
+        <Route path="/provider/certifications" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><ComplianceDocuments /></DashboardLayout></RequireAuth>} />
+        <Route path="/provider/team" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><MyTeamProvider /></DashboardLayout></RequireAuth>} />
+        <Route path="/provider/audit" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><SystemAuditLogsProvider /></DashboardLayout></RequireAuth>} />
+        <Route path="/provider/settings" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><OrganizationSettingsProvider /></DashboardLayout></RequireAuth>} />
 
-        {/*Admin Client routes */}
-        <Route path="/compliance" element={<ComplianceOperations />} />
-        <Route path="/verify-provider" element={<VerifyProvider />} />
-        <Route path="/service-orders" element={<ServiceOrders />} />
+        {/* Client Staff routes */}
+        <Route path="/compliance" element={<RequireAuth roles={["client_staff", "compliance_officer", "org_admin"]}><ComplianceOperations /></RequireAuth>} />
+        <Route path="/verify-provider" element={<RequireAuth roles={["client_staff", "compliance_officer", "org_admin"]}><VerifyProvider /></RequireAuth>} />
+        <Route path="/service-orders" element={<RequireAuth roles={["client_staff", "compliance_officer", "org_admin"]}><ServiceOrders /></RequireAuth>} />
 
-        {/*Admin Dashboard Route */}
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        {/* Admin Dashboard */}
+        <Route path="/admin-dashboard" element={<RequireAuth roles={["super_admin"]}><AdminDashboard /></RequireAuth>} />
 
-        {/* ── Provider Staff Routes ── */}
-        <Route path="/provider/jobs" element={<CurrentJobs />} />
-        <Route path="/provider/scan" element={<ScanVerifyPage />} />
+        {/* Provider Staff routes */}
+        <Route path="/provider/jobs" element={<RequireAuth roles={["provider_staff"]}><CurrentJobs /></RequireAuth>} />
+        <Route path="/provider/scan" element={<RequireAuth roles={["provider_staff"]}><ScanVerifyPage /></RequireAuth>} />
 
         {/* ── Global Catch-All ── */}
         <Route path="/" element={<LandingPage />} />

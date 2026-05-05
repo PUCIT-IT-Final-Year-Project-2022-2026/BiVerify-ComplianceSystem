@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ProviderStaffSidebar from "../../components/ProviderStaffSidebar";
+import { scan, getUser, apiErrorMessage } from "../../api/client";
 import "./ScanVerifyPage.css";
 
 // Colors
@@ -8,29 +9,28 @@ const G = "#3db546";
 const G_SOFT = "#f0fdf4";
 const BG = "#f4f5f7";
 
-// Sample Job
-const JOBS = [
-    {
-        id: "PO-1772507457",
-        date: "3/27/2026",
-        location: "spark",
-        assignedTo: "shawn",
-        status: "Scheduled",
-    },
-];
-
 export default function ProviderDashboard() {
-    const [jobs, setJobs] = useState(JOBS);
+    const [jobs, setJobs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const navigate = useNavigate();
 
+    useEffect(() => {
+        let cancelled = false;
+        scan.jobs()
+            .then((data) => { if (!cancelled) setJobs(data); })
+            .catch((err) => { if (!cancelled) setError(apiErrorMessage(err)); })
+            .finally(() => { if (!cancelled) setLoading(false); });
+        return () => { cancelled = true; };
+    }, []);
+
+    const me = getUser();
+
     const handleStartVerification = (job) => {
-        setJobs((prev) =>
-            prev.map((j) =>
-                j.id === job.id ? { ...j, status: "Active" } : j
-            )
-        );
-        navigate("/provider/scan");
+        const params = new URLSearchParams({ requestId: job.requestId });
+        if (job.poNumber) params.set("po", job.poNumber);
+        navigate(`/provider/scan?${params.toString()}`);
     };
 
     return (
@@ -59,19 +59,30 @@ export default function ProviderDashboard() {
                                 Active Operations ({jobs.length})
                             </h3>
 
+                            {loading && <p style={{ color: "#6B7280" }}>Loading…</p>}
+                            {error && (
+                                <div style={{ padding: "10px 12px", background: "#fee2e2", color: "#991b1b", borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
+                                    {error}
+                                </div>
+                            )}
+                            {!loading && !error && jobs.length === 0 && (
+                                <p style={{ color: "#6B7280" }}>No assigned jobs.</p>
+                            )}
+
                             {jobs.map((job) => (
                                 <div
-                                    key={job.id}
+                                    key={job.requestId}
                                     style={{
                                         background: "#fff",
                                         padding: 20,
                                         borderRadius: 12,
                                         boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                                        marginBottom: 16,
                                     }}
                                 >
                                     {/* ID + Status */}
                                     <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                        <strong>{job.id}</strong>
+                                        <strong>{job.poNumber || job.requestId}</strong>
                                         <span
                                             style={{
                                                 background: "#e8f4fd",
@@ -86,13 +97,14 @@ export default function ProviderDashboard() {
 
                                     {/* Info */}
                                     <div style={{ marginTop: 10, color: "#555" }}>
-                                        <div>📅 {job.date}</div>
-                                        <div>📍 {job.location}</div>
+                                        <div>📅 {job.scheduledDate ? new Date(job.scheduledDate).toLocaleDateString() : "—"}</div>
+                                        <div>📍 {job.siteLabel || job.clientName}</div>
+                                        <div style={{ fontSize: 13, marginTop: 4 }}>{job.serviceType}</div>
                                     </div>
 
                                     {/* Assigned */}
                                     <div style={{ marginTop: 15 }}>
-                                        Assigned to: <strong>{job.assignedTo}</strong>
+                                        Assigned to: <strong>{me?.fullName || "you"}</strong>
                                     </div>
 
                                     {/* Button */}

@@ -1,5 +1,12 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { getUser } from "../api/client";
+
+const ROLE_LABEL = {
+  super_admin: "Super Admin", org_admin: "Org Admin",
+  provider_staff: "Provider Staff", compliance_officer: "Compliance Officer",
+  client_staff: "Client Staff",
+};
 import {
   FaShieldAlt, FaChartBar, FaGlobe,
   FaTh, FaFileAlt, FaUsers,
@@ -37,9 +44,10 @@ const SECTIONS = [
 
 export default function ProviderSidebar() {
   const navigate = useNavigate();
+  const user = getUser();
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("biverify_token"); localStorage.removeItem("biverify_user");
     navigate("/login");
   };
 
@@ -114,8 +122,12 @@ export default function ProviderSidebar() {
           ))}
         </div>
 
-        {/* ── LOGOUT ── */}
+        {/* ── USER + LOGOUT ── */}
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.12)", paddingTop: 8 }}>
+          <div style={{ padding: "8px 12px", margin: "2px 8px", color: "rgba(255,255,255,0.85)" }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{user?.fullName || "Guest"}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{ROLE_LABEL[user?.role] || user?.role || ""}</div>
+          </div>
           <div
             onClick={handleLogout}
             onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.12)"}

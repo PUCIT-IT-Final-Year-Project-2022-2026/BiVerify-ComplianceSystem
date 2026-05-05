@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Html5Qrcode } from 'html5-qrcode';
 import './ScanVerifyPage.css';
 import ProviderStaffSidebar from '../../components/ProviderStaffSidebar';
+import { scan, bookings, apiErrorMessage } from '../../api/client';
 
 const Ico = ({ n, s = 15, c = "#fff" }) => {
   const icons = {
@@ -42,21 +45,87 @@ const TopNav = ({ onMenuToggle, isSidebarOpen }) => (
 );
 
 const ScanVerifyPage = () => {
+  const [searchParams] = useSearchParams();
+  const requestId = searchParams.get('requestId');
+  const poFromQuery = searchParams.get('po') || '';
+
   const [currentStep, setCurrentStep] = useState(1);
   const [currentTime, setCurrentTime] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [cameraOn, setCameraOn] = useState(false);
+  const [error, setError] = useState("");
+  const [siteLabel, setSiteLabel] = useState("");
+  const [bookingQrUrl, setBookingQrUrl] = useState("");
+  const scannerRef = useRef(null);
 
-  useEffect(() => {
-    if (currentStep === 2 && !currentTime) {
-      const now = new Date();
-      setCurrentTime(now.toLocaleTimeString('en-US', {
+  const stopCamera = async () => {
+    if (scannerRef.current) {
+      try { await scannerRef.current.stop(); } catch {}
+      try { await scannerRef.current.clear(); } catch {}
+      scannerRef.current = null;
+    }
+    setCameraOn(false);
+  };
+
+  const handleSiteScanResult = async (decoded) => {
+    if (!requestId) {
+      setError("No booking selected. Open this page from Current Jobs.");
+      await stopCamera();
+      return;
+    }
+    try {
+      const res = await scan.site(decoded, requestId);
+      setSiteLabel(res.siteLabel || "site");
+      setCurrentTime(new Date(res.startedAt).toLocaleTimeString('en-US', {
         hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true,
       }));
+      await stopCamera();
+      setCurrentStep(2);
+    } catch (err) {
+      setError(apiErrorMessage(err));
+      await stopCamera();
     }
-  }, [currentStep, currentTime]);
+  };
 
-  const handleNextStep = () => setCurrentStep(prev => Math.min(prev + 1, 3));
-  const handleReset = () => { setCurrentStep(1); setCurrentTime(""); setIsSidebarOpen(false); };
+  useEffect(() => {
+    if (currentStep !== 1 || !cameraOn) return;
+    const html5QrCode = new Html5Qrcode("reader");
+    scannerRef.current = html5QrCode;
+    let active = true;
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 240 },
+      (decodedText) => { if (active) { active = false; handleSiteScanResult(decodedText); } },
+      () => {}
+    ).catch((e) => setError(apiErrorMessage(e)));
+    return () => { active = false; stopCamera(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cameraOn, currentStep]);
+
+  const startCamera = () => { setError(""); setCameraOn(true); };
+
+  const handleAdvanceToHandover = async () => {
+    setCurrentStep(3);
+    if (requestId && !bookingQrUrl) {
+      try {
+        const blob = await bookings.qrPngBlob(requestId);
+        setBookingQrUrl(URL.createObjectURL(blob));
+      } catch (err) {
+        setError(apiErrorMessage(err));
+      }
+    }
+  };
+
+  useEffect(() => () => { if (bookingQrUrl) URL.revokeObjectURL(bookingQrUrl); }, [bookingQrUrl]);
+
+  const handleReset = () => {
+    stopCamera();
+    setCurrentStep(1);
+    setCurrentTime("");
+    setError("");
+    setSiteLabel("");
+    setIsSidebarOpen(false);
+  };
 
   return (
     <div className="layout-container">
@@ -111,29 +180,37 @@ const ScanVerifyPage = () => {
                         <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
                       </svg>
                     </div>
-                    <div className="scanner-display" onClick={handleNextStep} style={{ cursor: 'pointer' }} title="Click to simulate scan">
-                      <div className="scanner-target">
-                        <div className="corner corner-tl"></div><div className="corner corner-tr"></div>
-                        <div className="corner corner-bl"></div><div className="corner corner-br"></div>
-                        <div className="scanning-animation-line"></div>
-                        <div className="qr-elements">
-                          <div className="qr-box top-left"></div><div className="qr-box top-right"></div>
-                          <div className="qr-box bottom-left"></div><div className="qr-dots"></div>
+                    <div className="scanner-display">
+                      {cameraOn ? (
+                        <div id="reader" style={{ width: '100%', height: '100%' }} />
+                      ) : (
+                        <div className="scanner-target">
+                          <div className="corner corner-tl"></div><div className="corner corner-tr"></div>
+                          <div className="corner corner-bl"></div><div className="corner corner-br"></div>
+                          <div className="scanning-animation-line"></div>
+                          <div className="qr-elements">
+                            <div className="qr-box top-left"></div><div className="qr-box top-right"></div>
+                            <div className="qr-box bottom-left"></div><div className="qr-dots"></div>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
+                    {error && (
+                      <div style={{ margin: '12px 0', padding: '10px 12px', background: '#fee2e2', color: '#991b1b', borderRadius: 8, fontSize: 13 }}>
+                        {error}
+                      </div>
+                    )}
+                    {!requestId && (
+                      <div style={{ margin: '12px 0', padding: '10px 12px', background: '#fef3c7', color: '#92400e', borderRadius: 8, fontSize: 13 }}>
+                        Open this page from Current Jobs to start a scan.
+                      </div>
+                    )}
                     <div className="scanner-actions">
-                      <button className="btn-primary" onClick={handleNextStep}>
+                      <button className="btn-primary" onClick={startCamera} disabled={cameraOn || !requestId}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle>
                         </svg>
-                        Request Camera Permissions
-                      </button>
-                      <button className="btn-secondary" onClick={handleNextStep}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline>
-                        </svg>
-                        Scan an Image File
+                        {cameraOn ? 'Scanning…' : 'Request Camera Permissions'}
                       </button>
                     </div>
                   </div>
@@ -153,12 +230,12 @@ const ScanVerifyPage = () => {
                     </div>
                   </div>
                   <h2 className="verified-title">Arrival Verified</h2>
-                  <p className="verified-subtitle">You are checked in at <strong>west wing</strong>.<br />Please complete the scheduled tasks.</p>
+                  <p className="verified-subtitle">You are checked in at <strong>{siteLabel || 'site'}</strong>.<br />Please complete the scheduled tasks.</p>
                   <div className="time-block">
                     <p className="time-label">CHECK-IN TIME</p>
                     <p className="time-value">{currentTime}</p>
                   </div>
-                  <button className="btn-success-full" onClick={handleNextStep}>Perform Completion Handover</button>
+                  <button className="btn-success-full" onClick={handleAdvanceToHandover}>Perform Completion Handover</button>
                 </div>
               </div>
             )}
@@ -172,16 +249,19 @@ const ScanVerifyPage = () => {
                 <div className="qr-card-large">
                   <div className="qr-image-container">
                     <div className="qr-placeholder">
-                      <svg width="180" height="180" viewBox="0 0 24 24" fill="none" stroke="#0f172a" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="2" y="2" width="6" height="6" strokeWidth="2"></rect><rect x="4" y="4" width="2" height="2" fill="currentColor"></rect>
-                        <rect x="16" y="2" width="6" height="6" strokeWidth="2"></rect><rect x="18" y="4" width="2" height="2" fill="currentColor"></rect>
-                        <rect x="2" y="16" width="6" height="6" strokeWidth="2"></rect><rect x="4" y="18" width="2" height="2" fill="currentColor"></rect>
-                        <path d="M10 2h4M10 6h4M10 10h12M2 10h6M14 14h2M18 14h4M14 18h2M18 18h4M2 14h2M6 14h2M10 14h2M10 18h2M10 22h12" strokeWidth="1.5"></path>
-                      </svg>
+                      {bookingQrUrl ? (
+                        <img
+                          src={bookingQrUrl}
+                          alt="Booking QR"
+                          style={{ width: 220, height: 220, display: 'block' }}
+                        />
+                      ) : (
+                        <p style={{ color: '#6b7280' }}>Loading QR…</p>
+                      )}
                     </div>
                   </div>
                   <div className="qr-details">
-                    <p className="po-number">PO-1772507457</p>
+                    <p className="po-number">{poFromQuery || '—'}</p>
                     <p className="scan-instruction">Scan to Verify Completion</p>
                   </div>
                 </div>
