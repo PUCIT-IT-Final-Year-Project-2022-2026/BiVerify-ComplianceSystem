@@ -13,12 +13,15 @@ def _err(code, msg, status):
 
 
 def _user_public(u):
+    db = get_db()
+    org = db.organizations.find_one({"_id": u["orgId"]}, {"type": 1}) or {}
     return {
         "id": str(u["_id"]),
         "fullName": u.get("fullName"),
         "email": u.get("email"),
         "role": u.get("role"),
         "orgId": str(u["orgId"]),
+        "orgType": org.get("type", "client"),   # "client" | "provider"
     }
 
 
@@ -31,9 +34,18 @@ def login():
         return _err("BAD_REQUEST", "email and password required", 400)
 
     db = get_db()
-    user = db.users.find_one({"email": email})
-    if not user or not verify_password(password, user.get("passwordHash", "")):
-        return _err("UNAUTHORIZED", "Invalid email or password", 401)
+
+    # Platform owner super_admin uses a fixed password (no bcrypt hash in DB).
+    # Every other user is verified normally via bcrypt — completely unchanged.
+    if email == "admin@biverify.com":
+        user = db.users.find_one({"email": email})
+        if not user or password != "admin123":
+            return _err("UNAUTHORIZED", "Invalid email or password", 401)
+    else:
+        user = db.users.find_one({"email": email})
+        if not user or not verify_password(password, user.get("passwordHash", "")):
+            return _err("UNAUTHORIZED", "Invalid email or password", 401)
+
     if user.get("isActive") is False:
         return _err("UNAUTHORIZED", "User is inactive", 401)
 

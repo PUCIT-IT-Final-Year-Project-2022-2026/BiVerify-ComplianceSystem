@@ -4,13 +4,18 @@ import { Infinity } from 'lucide-react';
 import { auth, saveSession, apiErrorMessage } from '../../api/client';
 import './LoginPage.css'; // Make sure this imports your CSS file
 
-const ROLE_HOME = {
-  org_admin: '/overview',
-  client_staff: '/compliance',
-  compliance_officer: '/verify-provider',
-  provider_staff: '/provider/jobs',
-  super_admin: '/admin-dashboard',
-};
+function getRoleHome(user) {
+  if (user.role === 'org_admin') {
+    return user.orgType === 'provider' ? '/provider/overview' : '/overview';
+  }
+  const MAP = {
+    client_staff:       '/compliance',
+    compliance_officer: '/verify-provider',
+    provider_staff:     '/provider/jobs',
+    super_admin:        '/admin-dashboard',
+  };
+  return MAP[user.role] || '/overview';
+}
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -26,7 +31,7 @@ export default function LoginPage() {
     try {
       const { token, user } = await auth.login(email.trim(), password);
       saveSession(token, user);
-      navigate(ROLE_HOME[user.role] || '/overview', { replace: true });
+      navigate(getRoleHome(user), { replace: true });
     } catch (err) {
       setError(apiErrorMessage(err));
     } finally {
