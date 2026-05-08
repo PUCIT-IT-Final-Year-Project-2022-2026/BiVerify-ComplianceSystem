@@ -470,6 +470,16 @@ seed_if_empty("users", [
         "createdAt": past(90),
     },
     {
+        "_id": ObjectId(),
+        "orgId": goodme_id,
+        "fullName": "Provider Admin",
+        "email": "provider@biverify.com",
+        "passwordHash": "hashed_placeholder",
+        "role": "org_admin",
+        "isActive": True,
+        "createdAt": past(60),
+    },
+    {
         "_id": goodme_admin_id,
         "orgId": goodme_id,
         "fullName": "Goodme Admin",

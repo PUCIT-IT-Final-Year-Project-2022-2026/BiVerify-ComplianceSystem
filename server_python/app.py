@@ -6,7 +6,11 @@ from routes.location_routes import bp as location_bp
 from routes.booking_routes import bp as booking_bp
 from routes.scan_routes import bp as scan_bp
 from routes.team_routes import bp as team_bp
-
+from routes.service_request_routes import bp as service_request_bp 
+from routes.compliance_operations_routes import bp as compliance_ops_bp
+from routes.admin_dashboard_routes import bp as admin_dashboard_bp
+from routes.provider_dashboard_routes import bp as provider_dashboard_bp
+from routes.incoming_request_routes import bp as incoming_requests_bp
 
 def create_app():
     Config.validate()
@@ -18,6 +22,11 @@ def create_app():
     app.register_blueprint(booking_bp)
     app.register_blueprint(scan_bp)
     app.register_blueprint(team_bp)
+    app.register_blueprint(service_request_bp) 
+    app.register_blueprint(compliance_ops_bp)
+    app.register_blueprint(admin_dashboard_bp)
+    app.register_blueprint(provider_dashboard_bp)
+    app.register_blueprint(incoming_requests_bp)
 
     @app.get("/api/health")
     def health():

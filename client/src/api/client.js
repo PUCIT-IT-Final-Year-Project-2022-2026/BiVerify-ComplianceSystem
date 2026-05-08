@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const API_BASE =
-  import.meta.env.VITE_API_BASE || "http://localhost:5000";
+  import.meta.env.VITE_API_BASE || "http://localhost:5050";
 
 const api = axios.create({ baseURL: API_BASE });
 
@@ -43,8 +43,54 @@ export const team = {
 };
 
 export const bookings = {
+  /**
+   * List bookings for the logged-in client org.
+   * @param {Object} params  – { status?, search?, limit?, skip? }
+   * @returns {Promise<{ bookings: Array, total: number }>}
+   */
+  list: (params = {}) =>
+    api.get("/api/bookings", { params }).then((r) => r.data),
+ 
+  /**
+   * KPI stats for the 4 dashboard cards.
+   * @returns {Promise<{ total: number, kpis: Array }>}
+   */
+  stats: () => api.get("/api/bookings/stats").then((r) => r.data),
+ 
+  /**
+   * Full detail for a single booking.
+   * @param {string} id – service_request _id
+   * @returns {Promise<{ booking: Object }>}
+   */
+  get: (id) => api.get(`/api/bookings/${id}`).then((r) => r.data),
+ 
+  /**
+   * Create a new booking.
+   * @param {Object} payload – { providerOrgId, serviceType, siteLocationId,
+   *                            assignedStaffId, amount, description?,
+   *                            scheduledDate?, taxRate?, priority? }
+   * @returns {Promise<{ requestId, poId, poNumber, bookingToken, bookingQrPng }>}
+   */
+  create: (payload) =>
+    api.post("/api/bookings", payload).then((r) => r.data),
+ 
+  /**
+   * Cancel a pending booking.
+   * @param {string} id – service_request _id
+   * @returns {Promise<{ ok: boolean, message: string }>}
+   */
+  cancel: (id) =>
+    api.patch(`/api/bookings/${id}/cancel`).then((r) => r.data),
+ 
+  /**
+   * Download the booking QR as a Blob (for <img src={URL.createObjectURL(...)}> ).
+   * @param {string} requestId – service_request _id
+   * @returns {Promise<Blob>}
+   */
   qrPngBlob: (requestId) =>
-    api.get(`/api/bookings/${requestId}/qr.png`, { responseType: "blob" }).then((r) => r.data),
+    api
+      .get(`/api/bookings/${requestId}/qr.png`, { responseType: "blob" })
+      .then((r) => r.data),
 };
 
 export function saveSession(token, user) {
