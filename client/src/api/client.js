@@ -1,3 +1,10 @@
+/**
+ * BiVerify API client — client/src/api/client.js
+ *
+ * Add the `b2b` export below to the existing file.
+ * Everything above the "── B2B ──" comment is unchanged from the original.
+ */
+
 import axios from "axios";
 
 export const API_BASE =
@@ -43,55 +50,145 @@ export const team = {
 };
 
 export const bookings = {
-  /**
-   * List bookings for the logged-in client org.
-   * @param {Object} params  – { status?, search?, limit?, skip? }
-   * @returns {Promise<{ bookings: Array, total: number }>}
-   */
   list: (params = {}) =>
     api.get("/api/bookings", { params }).then((r) => r.data),
- 
-  /**
-   * KPI stats for the 4 dashboard cards.
-   * @returns {Promise<{ total: number, kpis: Array }>}
-   */
   stats: () => api.get("/api/bookings/stats").then((r) => r.data),
- 
-  /**
-   * Full detail for a single booking.
-   * @param {string} id – service_request _id
-   * @returns {Promise<{ booking: Object }>}
-   */
   get: (id) => api.get(`/api/bookings/${id}`).then((r) => r.data),
- 
-  /**
-   * Create a new booking.
-   * @param {Object} payload – { providerOrgId, serviceType, siteLocationId,
-   *                            assignedStaffId, amount, description?,
-   *                            scheduledDate?, taxRate?, priority? }
-   * @returns {Promise<{ requestId, poId, poNumber, bookingToken, bookingQrPng }>}
-   */
   create: (payload) =>
     api.post("/api/bookings", payload).then((r) => r.data),
- 
-  /**
-   * Cancel a pending booking.
-   * @param {string} id – service_request _id
-   * @returns {Promise<{ ok: boolean, message: string }>}
-   */
   cancel: (id) =>
     api.patch(`/api/bookings/${id}/cancel`).then((r) => r.data),
- 
-  /**
-   * Download the booking QR as a Blob (for <img src={URL.createObjectURL(...)}> ).
-   * @param {string} requestId – service_request _id
-   * @returns {Promise<Blob>}
-   */
   qrPngBlob: (requestId) =>
     api
       .get(`/api/bookings/${requestId}/qr.png`, { responseType: "blob" })
       .then((r) => r.data),
 };
+
+// ── B2B ──────────────────────────────────────────────────────────────────────
+
+export const b2b = {
+  /**
+   * Search platform orgs to connect with.
+   * @param {Object} params  { q?, type?: "client"|"provider", limit?, skip? }
+   * @returns {Promise<{ orgs: Array, total: number }>}
+   */
+  searchOrgs: (params = {}) =>
+    api.get("/api/b2b/orgs/search", { params }).then((r) => r.data),
+
+  /**
+   * List your connected partners.
+   * @param {Object} params  { search?, type?: "client"|"provider", limit?, skip? }
+   * @returns {Promise<{ partners: Array, total: number }>}
+   */
+  listPartners: (params = {}) =>
+    api.get("/api/b2b/partners", { params }).then((r) => r.data),
+
+  /**
+   * Full profile of one connected partner.
+   * @param {string} connectionId
+   * @returns {Promise<{ partner: Object }>}
+   */
+  getPartner: (connectionId) =>
+    api.get(`/api/b2b/partners/${connectionId}`).then((r) => r.data),
+
+  /**
+   * Pending requests received by your org.
+   * @returns {Promise<{ requests: Array, total: number }>}
+   */
+  receivedRequests: () =>
+    api.get("/api/b2b/requests/received").then((r) => r.data),
+
+  /**
+   * Pending requests sent by your org.
+   * @returns {Promise<{ requests: Array, total: number }>}
+   */
+  sentRequests: () =>
+    api.get("/api/b2b/requests/sent").then((r) => r.data),
+
+  /**
+   * Send a connection request.
+   * @param {string} targetOrgId
+   * @param {string} [notes]
+   * @returns {Promise<Object>}  the new connection doc
+   */
+  sendRequest: (targetOrgId, notes = "") =>
+    api.post("/api/b2b/requests", { targetOrgId, notes }).then((r) => r.data),
+
+  /**
+   * Accept a received connection request.
+   * @param {string} connectionId
+   */
+  acceptRequest: (connectionId) =>
+    api
+      .patch(`/api/b2b/requests/${connectionId}/accept`)
+      .then((r) => r.data),
+
+  /**
+   * Decline a received connection request.
+   * @param {string} connectionId
+   */
+  declineRequest: (connectionId) =>
+    api
+      .patch(`/api/b2b/requests/${connectionId}/decline`)
+      .then((r) => r.data),
+
+  /**
+   * Cancel a sent (pending) connection request.
+   * @param {string} connectionId
+   */
+  cancelRequest: (connectionId) =>
+    api
+      .patch(`/api/b2b/requests/${connectionId}/cancel`)
+      .then((r) => r.data),
+
+  /**
+   * Disconnect from an existing partner.
+   * @param {string} connectionId
+   */
+  disconnect: (connectionId) =>
+    api.delete(`/api/b2b/partners/${connectionId}`).then((r) => r.data),
+};
+
+// ── CLIENT DASHBOARD ─────────────────────────────────────────────────────────
+
+export const clientDashboard = {
+  /**
+   * 4 KPI stat cards.
+   * @returns {Promise<{ activeProviders, complianceRate, qrScansToday, expiringDocs }>}
+   */
+  stats: () =>
+    api.get("/api/client/dashboard/stats").then((r) => r.data),
+
+  /**
+   * Bar-chart data grouped by period.
+   * @param {"year"|"month"|"week"|"day"} period
+   * @returns {Promise<{ groups: Array<{label, qrVerified, manual}>, period }>}
+   */
+  scanChart: (period = "year") =>
+    api.get("/api/client/dashboard/scan-chart", { params: { period } }).then((r) => r.data),
+
+  /**
+   * Provider ranking by verified/completed job count.
+   * @param {number} limit
+   * @returns {Promise<{ rankings: Array }>}
+   */
+  providerRanking: (limit = 7) =>
+    api
+      .get("/api/client/dashboard/provider-ranking", { params: { limit } })
+      .then((r) => r.data),
+
+  /**
+   * Recent QR scan rows for the bottom table.
+   * @param {number} limit
+   * @returns {Promise<{ scans: Array }>}
+   */
+  recentScans: (limit = 12) =>
+    api
+      .get("/api/client/dashboard/recent-scans", { params: { limit } })
+      .then((r) => r.data),
+};
+
+
 
 export function saveSession(token, user) {
   localStorage.setItem("biverify_token", token);
