@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import ComplianceSidebar from "../../components/ComplianceSidebar";
+import { compliance, apiErrorMessage } from "../../api/client";
 
 const G  = "#2b9d4e";
 const GD = "#1f7a3b";
@@ -12,30 +13,31 @@ const Ico = ({ n, s = 15, c = "#fff" }) => {
   return icons[n] || null;
 };
 
-const invoices = [
-  { po: "PO-1772507457", date: "3/27/2026", provider: "goodme",        status: "In Progress", amount: "$89.86"  },
-  { po: "PO-2841903621", date: "3/20/2026", provider: "CleanTech Co",  status: "Completed",   amount: "$214.50" },
-  { po: "PO-3956128047", date: "3/15/2026", provider: "SafeGuard Ltd", status: "Completed",   amount: "$132.00" },
-  { po: "PO-4103857294", date: "3/10/2026", provider: "AquaFlow Svcs", status: "In Progress", amount: "$78.40"  },
-  { po: "PO-5287461930", date: "3/05/2026", provider: "TechFix Pak",   status: "Completed",   amount: "$310.75" },
-  { po: "PO-6394012875", date: "2/28/2026", provider: "GreenClean",    status: "Pending",     amount: "$55.20"  },
-  { po: "PO-7461839520", date: "2/21/2026", provider: "PowerSystems",  status: "Completed",   amount: "$425.00" },
-  { po: "PO-8530274196", date: "2/14/2026", provider: "ProBuild Co",   status: "Pending",     amount: "$189.90" },
-];
-
 const statusStyle = (s) => {
-  if (s === "Completed")   return { background: "rgba(43,157,78,0.10)",  color: "#1f7a3b", border: "1px solid rgba(43,157,78,0.18)"  };
-  if (s === "In Progress") return { background: "rgba(59,130,246,0.10)", color: "#1e40af", border: "1px solid rgba(59,130,246,0.2)"  };
-  return                          { background: "rgba(245,158,11,0.10)", color: "#92400e", border: "1px solid rgba(245,158,11,0.25)" };
+  const status = s?.toLowerCase() || "";
+  if (status === "completed")   return { background: "rgba(43,157,78,0.10)",  color: "#1f7a3b", border: "1px solid rgba(43,157,78,0.18)"  };
+  if (status === "in progress") return { background: "rgba(59,130,246,0.10)", color: "#1e40af", border: "1px solid rgba(59,130,246,0.2)"  };
+  return                               { background: "rgba(245,158,11,0.10)", color: "#92400e", border: "1px solid rgba(245,158,11,0.25)" };
 };
 
 const statusDot = (s) => {
-  if (s === "Completed")   return "#2b9d4e";
-  if (s === "In Progress") return null;
+  const status = s?.toLowerCase() || "";
+  if (status === "completed")   return "#2b9d4e";
+  if (status === "in progress") return null;
   return "#F59E0B";
 };
 
 export default function ServiceOrders() {
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    compliance.listOrders()
+      .then(setInvoices)
+      .catch(err => setError(apiErrorMessage(err)))
+      .finally(() => setLoading(false));
+  }, []);
 
   const exportCSV = () => {
     const headers = ["PO", "Date", "Provider", "Status", "Amount"];
@@ -127,7 +129,13 @@ export default function ServiceOrders() {
               </tr>
             </thead>
             <tbody>
-              {invoices.map((inv, i) => (
+              {loading ? (
+                <tr><td colSpan="4" style={{ padding: "32px", textAlign: "center", color: "#6B7280" }}>Loading orders...</td></tr>
+              ) : error ? (
+                <tr><td colSpan="4" style={{ padding: "32px", textAlign: "center", color: "#EF4444" }}>{error}</td></tr>
+              ) : invoices.length === 0 ? (
+                <tr><td colSpan="4" style={{ padding: "32px", textAlign: "center", color: "#6B7280" }}>No orders found.</td></tr>
+              ) : invoices.map((inv, i) => (
                 <tr key={i}
                   style={{ borderTop: "1px solid rgba(43,157,78,0.08)", transition: "background 0.12s" }}
                   onMouseEnter={e => e.currentTarget.style.background = "rgba(43,157,78,0.03)"}

@@ -6,6 +6,7 @@ from routes.location_routes import bp as location_bp
 from routes.booking_routes import bp as booking_bp
 from routes.scan_routes import bp as scan_bp
 from routes.team_routes import bp as team_bp
+from routes.compliance_routes import bp as compliance_bp
 
 
 def create_app():
@@ -18,6 +19,7 @@ def create_app():
     app.register_blueprint(booking_bp)
     app.register_blueprint(scan_bp)
     app.register_blueprint(team_bp)
+    app.register_blueprint(compliance_bp)
 
     @app.get("/api/health")
     def health():

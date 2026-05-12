@@ -277,6 +277,7 @@ const NAV_SECTIONS = [
     { id: "bookings", icon: "bookings", label: "Service Bookings" },
     { id: "vault",    icon: "vault",    label: "Compliance Vault" },
     { id: "team",     icon: "team",     label: "My Team"          },
+    { id: "clientqr", icon: "qr",       label: "ClientQR"         },
   ]},
   { section: "SYSTEM", items: [
     { id: "audit",    icon: "check",    label: "Audit History"    },
