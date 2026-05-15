@@ -208,9 +208,11 @@ export function logout() {
 export function apiErrorMessage(err) {
   return (
     err?.response?.data?.error?.message ||
+    err?.response?.data?.message ||
+    err?.response?.data?.detail ||
+    (err?.response?.status === 409 ? "This booking cannot be cancelled in its current status." : null) ||
     err?.message ||
     "Something went wrong"
   );
 }
-
 export default api;

@@ -1,20 +1,3 @@
-"""
-booking_routes.py  –  Full backend for the ServiceBookings client-side page.
-
-Endpoints
-─────────
-POST   /api/bookings                     Create a new booking  (org_admin)
-GET    /api/bookings                     List bookings for the logged-in client org  (org_admin)
-GET    /api/bookings/stats               KPI stats for dashboard cards  (org_admin)
-GET    /api/bookings/<id>                Single booking detail  (org_admin | provider_staff)
-PATCH  /api/bookings/<id>/cancel         Client cancels a booking  (org_admin)
-GET    /api/bookings/<id>/qr.png         Download booking QR image  (org_admin | provider_staff)
-
-Unchanged from original:
-  – POST /api/bookings  (extended, backward-compatible)
-  – GET  /api/bookings/<id>/qr.png
-"""
-
 import random
 from datetime import datetime, timezone
 
@@ -54,13 +37,15 @@ def _serialize_booking(sr, po=None, provider_org=None):
     shape the frontend expects.
     """
     status_map = {
-        "accepted":    {"status": "pending",    "label": "Pending"},
-        "in_progress": {"status": "inprogress", "label": "In Progress"},
-        "completed":   {"status": "completed",  "label": "Completed"},
-        "cancelled":   {"status": "cancelled",  "label": "Cancelled"},
+        "pending":     {"status": "pending",     "label": "Pending"},
+        "accepted":    {"status": "accepted",    "label": "Accepted"},
+        "in_progress": {"status": "inprogress",  "label": "In Progress"},
+        "completed":   {"status": "completed",   "label": "Completed"},
+        "cancelled":   {"status": "cancelled",   "label": "Cancelled"},
+        "rejected":    {"status": "rejected",    "label": "Rejected"},
     }
-    raw_status = sr.get("status", "accepted")
-    mapped = status_map.get(raw_status, {"status": raw_status, "label": raw_status.capitalize()})
+    raw_status = sr.get("status", "pending")
+    mapped = status_map.get(raw_status, {"status": raw_status, "label": raw_status.replace("_", " ").capitalize()})
 
     result = {
         "id":           str(sr["_id"]),
@@ -121,10 +106,12 @@ def _fetch_bookings_for_org(org_id, filters=None):
 
     # Filter by status (frontend status label)
     status_reverse = {
-        "pending":    "accepted",
+        "pending":    "pending",
+        "accepted":   "accepted",
         "inprogress": "in_progress",
         "completed":  "completed",
         "cancelled":  "cancelled",
+        "rejected":   "rejected",
     }
     if filters.get("status") and filters["status"] != "all":
         raw = status_reverse.get(filters["status"])
@@ -419,7 +406,7 @@ def cancel_booking(booking_id):
     if not sr:
         return _err("NOT_FOUND", "Booking not found", 404)
 
-    if sr["status"] not in ("accepted",):
+    if sr["status"] not in ("accepted", "pending"):
         return _err(
             "CONFLICT",
             f"Cannot cancel a booking with status '{sr['status']}'",
@@ -434,13 +421,13 @@ def cancel_booking(booking_id):
     # Also mark the PO as void
     db.purchase_orders.update_one(
         {"requestId": sr_oid},
-        {"$set": {"status": "voided", "voidedAt": now}},
+        {"$set": {"status": "cancelled", "updatedAt": now}},
     )
 
     write_audit(
         org_id=g.user["orgId"], user_id=g.user["_id"],
-        action="cancelled", entity="service_request", entity_id=sr_oid,
-        description=f"Booking cancelled by client admin",
+        action="deleted", entity="service_request", entity_id=sr_oid,
+        description="Booking cancelled by client admin",
     )
 
     return jsonify({"ok": True, "message": "Booking cancelled"})

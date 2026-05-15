@@ -1,18 +1,3 @@
-"""
-compliance_operations_routes.py  –  Backend for ComplianceOperations.jsx (ClientStaff)
-
-Endpoints
-─────────
-GET  /api/compliance-ops/jobs           Assigned verifications for the logged-in client_staff
-GET  /api/compliance-ops/stats          KPI cards: Total PO Value, Total Tax Generated, Completed Jobs
-POST /api/compliance-ops/jobs/<id>/start   Mark a job as in_progress (after site-QR scan)
-POST /api/compliance-ops/jobs/<id>/complete  Complete a job (after booking-QR scan)
-
-Register in app.py:
-    from routes.compliance_operations_routes import bp as compliance_ops_bp
-    app.register_blueprint(compliance_ops_bp)
-"""
-
 from datetime import datetime, timezone
 
 from bson import ObjectId
