@@ -42,7 +42,12 @@ def create_app():
     @app.before_request
     def handle_preflight():
         if request.method == "OPTIONS":
-            return "", 200
+            response = app.make_default_options_response()
+            response.headers["Access-Control-Allow-Origin"] = request.headers.get("Origin", "*")
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept"
+            response.headers["Access-Control-Max-Age"] = "600"
+            return response
 
     # ── Blueprints ────────────────────────────────────────────────────────────
     app.register_blueprint(auth_bp)

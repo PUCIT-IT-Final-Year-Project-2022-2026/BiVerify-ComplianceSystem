@@ -53,21 +53,36 @@ def list_providers():
     db = get_db()
     client_org_id = g.user["orgId"]
 
-    # Try to find connected providers via b2b_connections collection
+    # Find all active (connected) B2B connections for this org — bidirectional.
+    # We check both org1Id and org2Id because the client may have been either
+    # the initiator or the acceptor of the connection.
+    # Only "connected" status is shown — pending/disconnected orgs are excluded
+    # because the user should only request services from confirmed partners.
     connections = list(db.b2b_connections.find({
-    "org1Id": client_org_id,
-    "status": {"$in": ["connected", "pending"]},
-}))
+        "$or": [
+            {"org1Id": client_org_id},
+            {"org2Id": client_org_id},
+        ],
+        "status": "connected",
+    }))
 
     if connections:
-        provider_ids = [c["org2Id"] for c in connections if c.get("org2Id")]
+        # Extract the *other* org's id from each connection
+        partner_ids = []
+        for c in connections:
+            if c.get("org1Id") == client_org_id:
+                partner_ids.append(c["org2Id"])
+            else:
+                partner_ids.append(c["org1Id"])
+
         providers = list(db.organizations.find({
-            "_id": {"$in": provider_ids},
+            "_id": {"$in": partner_ids},
             "type": "provider",
         }))
     else:
-        # Fallback: return all provider orgs (useful before B2B connections are set up)
-        providers = list(db.organizations.find({"type": "provider"}))
+        # No connections yet — return empty list so the UI shows a clear
+        # "no connected partners" state rather than a confusing all-orgs dump.
+        providers = []
 
     result = []
     for p in providers:
@@ -173,10 +188,19 @@ def submit_request():
     """
     data = request.get_json(silent=True) or {}
 
-    required = ["providerOrgId", "serviceType", "siteLocationId", "assignedStaffId", "amount"]
+    required = ["providerOrgId", "serviceType", "assignedStaffId", "amount"]
     missing = [k for k in required if not data.get(k)]
     if missing:
         return _err("BAD_REQUEST", f"Required fields missing: {', '.join(missing)}", 400)
+
+    # At least one location signal is required: a saved site, manual address, or pin coords
+    has_location = (
+        data.get("siteLocationId") or
+        (data.get("manualAddress") or "").strip() or
+        (data.get("pinLat") is not None and data.get("pinLng") is not None)
+    )
+    if not has_location:
+        return _err("BAD_REQUEST", "A location is required (saved site, address, or map pin)", 400)
 
     db = get_db()
     client_org_id = g.user["orgId"]
@@ -191,15 +215,17 @@ def submit_request():
     if not provider:
         return _err("NOT_FOUND", "Provider org not found", 404)
 
-    # Validate site
-    try:
-        site_id = ObjectId(data["siteLocationId"])
-    except (InvalidId, TypeError):
-        return _err("BAD_REQUEST", "Invalid siteLocationId", 400)
-
-    site = db.site_locations.find_one({"_id": site_id, "orgId": client_org_id})
-    if not site:
-        return _err("NOT_FOUND", "Site location not found for your org", 404)
+    # Validate site (optional — user may have used map pin or manual address instead)
+    site = None
+    site_id = None
+    if data.get("siteLocationId"):
+        try:
+            site_id = ObjectId(data["siteLocationId"])
+        except (InvalidId, TypeError):
+            return _err("BAD_REQUEST", "Invalid siteLocationId", 400)
+        site = db.site_locations.find_one({"_id": site_id, "orgId": client_org_id})
+        if not site:
+            return _err("NOT_FOUND", "Site location not found for your org", 404)
 
     # Validate staff
     try:
@@ -240,10 +266,12 @@ def submit_request():
 
     # Build location string
     location_parts = []
-    if site.get("label"):
+    if site and site.get("label"):
         location_parts.append(site["label"])
     if data.get("manualAddress", "").strip():
         location_parts.append(data["manualAddress"].strip())
+    elif data.get("pinLat") is not None and data.get("pinLng") is not None:
+        location_parts.append(f"{data['pinLat']:.5f}, {data['pinLng']:.5f}")
     location_str = " — ".join(location_parts) if location_parts else ""
 
     now = datetime.now(timezone.utc)
@@ -254,12 +282,12 @@ def submit_request():
         "providerOrgId":   provider_id,
         "requestedBy":     g.user["_id"],
         "assignedStaffId": staff_id,
-        "siteLocationId":  site_id,
+        "siteLocationId":  site_id if site else None,
         "serviceType":     data["serviceType"],
         "description":     data.get("description", ""),
         "location":        location_str,
         "manualAddress":   data.get("manualAddress", ""),
-        "status":          "accepted",
+        "status":          "pending",
         "priority":        data.get("priority", "medium"),
         "createdAt":       now,
         "updatedAt":       now,
