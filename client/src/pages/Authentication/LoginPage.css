@@ -202,6 +202,28 @@ body {
   background-color: var(--primary-dark);
 }
 
+.btn-secondary {
+  height: 48px;
+  padding: 0 16px;
+  background-color: var(--card-bg);
+  color: var(--dark-text);
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--border-medium);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-secondary:hover {
+  background-color: #f9fafb;
+  border-color: var(--primary-green);
+  color: var(--primary-green);
+}
+
 /* Responsiveness for small screens */
 @media (max-width: 768px) {
   .login-wrapper {

@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminSidebar from "../../components/AdminSidebar";
+import api from "../../api/client";
 
 const Ico = ({ n, s = 15, c = "#fff" }) => {
+// ... keep existing Ico ...
   const icons = {
     shield:   <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
     bell:     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>,
@@ -17,24 +19,60 @@ const Ico = ({ n, s = 15, c = "#fff" }) => {
   return icons[n] || null;
 };
 
-const stats = [
-  { title: "Total Organizations",  value: "18", icon: "org",     accent: "" },
-  { title: "Active Organizations", value: "13", icon: "active",  accent: "" },
-  { title: "Pending Approvals",    value: "5",  icon: "pending", accent: "warn" },
-  { title: "Total Users",          value: "25", icon: "users",   accent: "" },
-];
-
-const providers = [
-  { company: "goodme", domain: "goodme.biverify.com", admin: "goodme@example.com", date: "3/3/2026", doc: "Insurance", expiry: "2/28/2026" },
-  { company: "endure", domain: "endure.biverify.com", admin: "admin@endure.com",   date: "3/2/2026", doc: "Insurance", expiry: "2/27/2026" },
-];
-
 const G = "#2b9d4e", GD = "#1f7a3b";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const handleApprove = (p) => alert(`Approved: ${p.company}`);
-  const handleReject  = (p) => alert(`Rejected: ${p.company}`);
+  const [statsData, setStatsData] = useState([]);
+  const [pendingProviders, setPendingProviders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchDashboard = async () => {
+    try {
+      setLoading(true);
+      const [statsRes, providersRes] = await Promise.all([
+        api.get("/api/admin/dashboard/stats"),
+        api.get("/api/admin/dashboard/pending-providers")
+      ]);
+
+      const mappedStats = [
+        { title: "Total Organizations",  value: statsRes.data.totalOrganizations, icon: "org",     accent: "" },
+        { title: "Active Organizations", value: statsRes.data.activeOrganizations, icon: "active",  accent: "" },
+        { title: "Pending Approvals",    value: statsRes.data.pendingApprovals,    icon: "pending", accent: "warn" },
+        { title: "Total Users",          value: statsRes.data.totalUsers,           icon: "users",   accent: "" },
+      ];
+
+      setStatsData(mappedStats);
+      setPendingProviders(providersRes.data);
+    } catch (err) {
+      console.error("Dashboard Load Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
+
+  const handleApprove = async (p) => {
+    try {
+      await api.post(`/api/admin/dashboard/approve-provider/${p.id}`);
+      fetchDashboard();
+    } catch (err) {
+      alert("Failed to approve provider");
+    }
+  };
+
+  const handleReject = async (p) => {
+    if (!window.confirm("Are you sure you want to reject this application?")) return;
+    try {
+      await api.post(`/api/admin/dashboard/reject-provider/${p.id}`);
+      fetchDashboard();
+    } catch (err) {
+      alert("Failed to reject provider");
+    }
+  };
 
   return (
     <div style={{ minHeight: "100vh", background: "#F5F6FA", fontFamily: "'Inter', sans-serif" }}>
@@ -87,7 +125,7 @@ export default function AdminDashboard() {
 
         {/* KPI Cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 24 }}>
-          {stats.map((k, i) => (
+          {statsData.map((k, i) => (
             <div key={i} style={{ background: "#fff", borderRadius: 12, border: "1px solid rgba(43,157,78,0.12)", padding: "18px 20px", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
               <div style={{ position: "absolute", top: 0, left: 0, width: 3, height: "100%", background: k.accent === "warn" ? "#F59E0B" : G, borderRadius: "12px 0 0 12px" }} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
@@ -108,7 +146,7 @@ export default function AdminDashboard() {
 
         {/* Approval Cards */}
         <div style={{ background: "#fff", borderRadius: 14, padding: 24, border: "1.5px solid rgba(43,157,78,0.35)", boxShadow: "0 2px 12px rgba(43,157,78,0.08)", display: "flex", flexDirection: "column", gap: 14 }}>
-          {providers.map((p, i) => (
+          {pendingProviders.map((p, i) => (
             <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderRadius: 12, border: "1px solid rgba(43,157,78,0.14)", background: "linear-gradient(135deg, rgba(43,157,78,0.03) 0%, #fff 100%)", gap: 20, position: "relative", overflow: "hidden" }}>
               <div style={{ position: "absolute", top: 0, left: 0, width: 3, height: "100%", background: "#F59E0B", borderRadius: "12px 0 0 12px" }} />
               <div style={{ display: "flex", flexDirection: "column", gap: 3, flex: 1 }}>

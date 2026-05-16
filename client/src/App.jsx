@@ -14,7 +14,7 @@ import ClientDashboard from "./pages/ClientSide/ClientDashboard.jsx";
 import B2BNetwork from "./pages/ClientSide/B2BNetwork.jsx";
 import ServiceBookings from "./pages/ClientSide/ServiceBookings.jsx";
 import ComplianceVault from "./pages/ClientSide/ComplianceVault.jsx";
-
+import ServiceRequest from "./pages/ClientSide/ServiceRequest.jsx";
 
 import ProviderDashboard from "./pages/ProviderSide/ServiceProviderDashboard.jsx";
 import ProviderB2BNetwork from "./pages/ProviderSide/ProviderB2BNetwork.jsx";
@@ -89,6 +89,7 @@ export default function App() {
         <Route path="/audit" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><SystemAuditLogsClient /></DashboardLayout></RequireAuth>} />
         <Route path="/clientqr" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><ClientQR /></DashboardLayout></RequireAuth>} />
         <Route path="/settings" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><OrganizationSettingsClient /></DashboardLayout></RequireAuth>} />
+        <Route path="/new-request" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><ServiceRequest /></DashboardLayout></RequireAuth>} />
 
         {/* ── Provider Org Admin Routes ── */}
         <Route path="/provider/overview" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><ServiceProviderDashboard /></DashboardLayout></RequireAuth>} />

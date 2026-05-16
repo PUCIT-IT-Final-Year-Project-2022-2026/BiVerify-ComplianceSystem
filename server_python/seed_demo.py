@@ -40,6 +40,7 @@ def main():
         "ao@assetowner.co.za",       # org_admin, client
         "compliance@assetowner.co.za",  # compliance_officer, client
         "shawn@goodme.co.za",        # provider_staff
+        "provider@biverify.com",      # org_admin, provider
     ]:
         set_password(email)
 
@@ -126,6 +127,7 @@ def main():
 
     print("\n══════════ DEMO READY ══════════")
     print(f"  Login (all use password '{DEMO_PASSWORD}'):")
+    print(f"    Provider admin   →  provider@biverify.com")
     print(f"    Provider staff   →  shawn@goodme.co.za")
     print(f"    Client org admin →  ao@assetowner.co.za")
     print(f"    Compliance off.  →  compliance@assetowner.co.za")
