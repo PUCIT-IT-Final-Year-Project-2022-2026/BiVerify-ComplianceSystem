@@ -17,6 +17,7 @@ import {
   FaCog,
   FaSignOutAlt,
   FaHistory,
+  FaQrcode,
 } from "react-icons/fa";
 
 const G      = "#2b9d4e";
@@ -38,6 +39,7 @@ const SECTIONS = [
       { to: "/vault",    Icon: FaFileAlt,       label: "Compliance Vault" },
       { to: "/team",     Icon: FaUsers,         label: "My Team"          },
       { to: "/audit",     Icon: FaHistory,         label: "Audit Logs"          },
+      { to: "/clientqr",  Icon: FaQrcode,          label: "ClientQR"            },
     ],
   },
   {

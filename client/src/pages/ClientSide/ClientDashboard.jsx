@@ -131,6 +131,55 @@ const KpiSkeleton = () => (
 //  HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
 
+<<<<<<< HEAD
+// QR Verifications: grouped bars per quarter (Q1–Q4) per year
+const scanYearGroups = [
+  { year: "2023 Q1", bars: [28, 18] },
+  { year: "2023 Q2", bars: [34, 22] },
+  { year: "2023 Q3", bars: [41, 14] },
+  { year: "2023 Q4", bars: [30, 20] },
+  { year: "2024 Q1", bars: [38, 16] },
+  { year: "2024 Q2", bars: [52, 10] },
+  { year: "2024 Q3", bars: [56, 8] },
+  { year: "2024 Q4", bars: [44, 12] },
+];
+
+const scans = [
+  { site: "Site A – Lahore HQ",       provider: "CleanTech Solutions", time: "2m ago",  status: "Verified" },
+  { site: "Site B – DHA Warehouse",   provider: "GreenClean Services",  time: "38m ago", status: "Verified" },
+  { site: "Site C – Gulberg Office",  provider: "TechFix Pakistan",     time: "1h ago",  status: "Mismatch" },
+  { site: "Site A – Lahore HQ",       provider: "SafeGuard Security",   time: "2h ago",  status: "Verified" },
+  { site: "Site D – Model Town",      provider: "PowerSystems Ltd",     time: "3h ago",  status: "Verified" },
+  { site: "Site B – DHA Warehouse",   provider: "AquaFlow Services",    time: "5h ago",  status: "Verified" },
+];
+
+const rankings = [
+  { name: "CleanTech Solutions", val: "127 jobs", top: true },
+  { name: "GreenClean Services", val: "98 jobs",  top: true },
+  { name: "TechFix Pakistan",    val: "81 jobs",  top: true },
+  { name: "SafeGuard Security",  val: "64 jobs",  top: false },
+  { name: "PowerSystems Ltd",    val: "39 jobs",  top: false },
+  { name: "AquaFlow Services",   val: "22 jobs",  top: false },
+  { name: "ProBuild Contracts",  val: "14 jobs",  top: false },
+];
+
+const NAV_SECTIONS = [
+  { section: "MANAGEMENT", items: [
+    { id: "overview", icon: "home",     label: "Overview"         },
+    { id: "network",  icon: "network",  label: "B2B Network"      },
+  ]},
+  { section: "ASSET OPERATIONS", items: [
+    { id: "bookings", icon: "bookings", label: "Service Bookings" },
+    { id: "vault",    icon: "vault",    label: "Compliance Vault" },
+    { id: "team",     icon: "team",     label: "My Team"          },
+    { id: "clientqr", icon: "qr",       label: "ClientQR"         },
+  ]},
+  { section: "SYSTEM", items: [
+    { id: "audit",    icon: "check",    label: "Audit History"    },
+    { id: "settings", icon: "settings", label: "Settings"         },
+  ]},
+];
+=======
 /** Turn the /stats response into the 4 KPI card descriptors the template uses. */
 function buildKpiCards(stats) {
   if (!stats) return [];
@@ -174,6 +223,7 @@ function buildKpiCards(stats) {
     },
   ];
 }
+>>>>>>> origin/develop
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  MAIN COMPONENT

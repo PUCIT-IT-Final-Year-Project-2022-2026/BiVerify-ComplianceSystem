@@ -19,8 +19,12 @@ def _err(code, msg, status):
 def create_location():
     data = request.get_json(silent=True) or {}
     label = (data.get("label") or "").strip()
+    address = (data.get("address") or "").strip()
+    
     if not label:
-        return _err("BAD_REQUEST", "label required", 400)
+        return _err("BAD_REQUEST", "label (branch name) required", 400)
+    if not address:
+        return _err("BAD_REQUEST", "address required", 400)
 
     db = get_db()
     token = generate_token()
@@ -28,6 +32,7 @@ def create_location():
     doc = {
         "orgId": g.user["orgId"],
         "label": label,
+        "address": address,
         "siteToken": token,
         "isActive": True,
         "createdAt": now,
@@ -38,12 +43,13 @@ def create_location():
     write_audit(
         org_id=g.user["orgId"], user_id=g.user["_id"],
         action="created", entity="organization", entity_id=site_id,
-        description=f"Site QR created: {label}",
+        description=f"Branch QR created: {label} at {address}",
     )
 
     return jsonify({
         "id": str(site_id),
         "label": label,
+        "address": address,
         "siteToken": token,
         "qrPng": make_qr_data_url(token),
     }), 201
@@ -55,7 +61,14 @@ def list_locations():
     db = get_db()
     cur = db.site_locations.find({"orgId": g.user["orgId"]}).sort("createdAt", -1)
     return jsonify([
-        {"id": str(d["_id"]), "label": d["label"], "isActive": d.get("isActive", True)}
+        {
+            "id": str(d["_id"]), 
+            "label": d["label"], 
+            "address": d.get("address", ""),
+            "siteToken": d.get("siteToken", ""),
+            "isActive": d.get("isActive", True),
+            "qrPng": make_qr_data_url(d.get("siteToken", "")) if d.get("siteToken") else None
+        }
         for d in cur
     ])
 
