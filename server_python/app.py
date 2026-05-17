@@ -14,7 +14,7 @@ from routes.incoming_request_routes import bp as incoming_requests_bp
 from routes.compliance_vault_routes import bp as compliance_vault_bp
 from routes.b2b_routes import bp as b2b_bp
 from routes.client_dashboard_routes import bp as client_dashboard_bp
-from routes.provider_compliance_routes import bp as provider_compliance_bp
+from routes.compliance_routes import bp as provider_compliance_bp
 from routes.client_settings_routes import bp as client_settings_bp
 
 
