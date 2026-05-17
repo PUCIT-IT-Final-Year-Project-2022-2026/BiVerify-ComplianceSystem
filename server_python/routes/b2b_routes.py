@@ -63,7 +63,7 @@ def _serialize_connection(conn: dict, viewer_org_id: ObjectId, db) -> dict:
     other_org_id = conn["org2Id"] if is_initiator else conn["org1Id"]
     other_org = db.organizations.find_one(
         {"_id": other_org_id},
-        {"name": 1, "industry": 1, "type": 1, "logoUrl": 1, "contactEmail": 1},
+        {"name": 1, "industry": 1, "type": 1, "logoUrl": 1, "adminEmail": 1},  # ← fixed: was contactEmail
     ) or {}
 
     return {
@@ -74,12 +74,12 @@ def _serialize_connection(conn: dict, viewer_org_id: ObjectId, db) -> dict:
         "connectedAt": conn["connectedAt"].isoformat() if conn.get("connectedAt") else None,
         "notes":       conn.get("notes"),
         "partner": {
-            "id":           str(other_org_id),
-            "name":         other_org.get("name"),
-            "industry":     other_org.get("industry"),
-            "type":         other_org.get("type"),
-            "logoUrl":      other_org.get("logoUrl"),
-            "contactEmail": other_org.get("contactEmail"),
+            "id":         str(other_org_id),
+            "name":       other_org.get("name"),
+            "industry":   other_org.get("industry"),
+            "type":       other_org.get("type"),
+            "logoUrl":    other_org.get("logoUrl"),
+            "adminEmail": other_org.get("adminEmail"),  # ← fixed: was contactEmail
         },
     }
 
@@ -253,7 +253,7 @@ def discover_orgs():
     orgs = list(
         db.organizations.find(
             org_filter,
-            {"name": 1, "industry": 1, "type": 1, "logoUrl": 1, "contactEmail": 1,
+            {"name": 1, "industry": 1, "type": 1, "logoUrl": 1, "adminEmail": 1,
              "description": 1, "city": 1, "country": 1},
         )
         .sort("name", 1)
@@ -268,7 +268,7 @@ def discover_orgs():
             "industry":     p.get("industry"),
             "type":         p.get("type"),
             "logoUrl":      p.get("logoUrl"),
-            "contactEmail": p.get("contactEmail"),
+            "adminEmail":   p.get("adminEmail"),   # ← fixed: was contactEmail
             "description":  p.get("description"),
             "city":         p.get("city"),
             "country":      p.get("country"),

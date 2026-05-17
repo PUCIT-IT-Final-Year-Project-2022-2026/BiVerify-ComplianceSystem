@@ -11,6 +11,7 @@ Powers ClientDashboard.jsx (ClientSide).
 
 Endpoints
 ─────────
+GET  /api/client/dashboard/me               → navbar data (org name, initials, site label)
 GET  /api/client/dashboard/stats            → 4 KPI cards
 GET  /api/client/dashboard/scan-chart       → QR scan volume grouped by quarter (bar chart)
 GET  /api/client/dashboard/provider-ranking → Provider ranking by verified job count
@@ -81,6 +82,53 @@ def _relative_time(ts: datetime) -> str:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+#  GET /api/client/dashboard/me
+#  Returns navbar data: org name, initials, active site label, user display name.
+#  Used to replace static hardcoded values in the top nav.
+# ══════════════════════════════════════════════════════════════════════════════
+@bp.get("/me")
+@require_role(*CLIENT_ROLES)
+def me():
+    db  = get_db()
+    org = db.organizations.find_one(
+        {"_id": _oid(g.user["orgId"])},
+        {"name": 1, "sites": 1}
+    )
+
+    org_name = org["name"] if org else "Unknown Org"
+
+    # Build initials from org name (up to 2 words)
+    words    = [w for w in org_name.split() if w]
+    initials = "".join(w[0].upper() for w in words[:2]) if words else "??"
+
+    # Pick the first active site as the "current" site label
+    sites      = org.get("sites", []) if org else []
+    site_label = None
+    for s in sites:
+        if s.get("active", True):          # prefer flagged-active site
+            site_label = s.get("label") or s.get("name")
+            break
+    if not site_label and sites:
+        site_label = sites[0].get("label") or sites[0].get("name")
+    if not site_label:
+        site_label = "HQ"
+
+    # User display name — prefer full name, fall back to email prefix
+    user_name = g.user.get("name", "")
+    if not user_name:
+        email     = g.user.get("email", "")
+        user_name = email.split("@")[0] if email else "User"
+
+    return jsonify({
+        "orgName":   org_name,
+        "initials":  initials,
+        "siteLabel": site_label,
+        "userName":  user_name,
+        "role":      g.user.get("role", ""),
+    })
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 #  GET /api/client/dashboard/stats
 #  Powers the 4 KPI cards:
 #    1. Active Providers   – distinct provider orgs with an active/in_progress request
@@ -105,11 +153,11 @@ def get_stats():
         {"$group": {"_id": "$providerOrgId"}},
         {"$count": "total"},
     ]
-    active_result   = list(db.service_requests.aggregate(active_pipeline))
+    active_result    = list(db.service_requests.aggregate(active_pipeline))
     active_providers = active_result[0]["total"] if active_result else 0
 
     # Count newly onboarded this calendar month (status=accepted created this month)
-    month_start = _now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    month_start    = _now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     new_this_month = db.service_requests.count_documents({
         "clientOrgId": my_oid,
         "status": {"$in": ["accepted", "in_progress"]},
@@ -128,7 +176,7 @@ def get_stats():
         provider_ids.append(peer)
 
     # Also include any provider orgs that have active service requests with us
-    sr_providers = db.service_requests.distinct("providerOrgId", {"clientOrgId": my_oid})
+    sr_providers     = db.service_requests.distinct("providerOrgId", {"clientOrgId": my_oid})
     all_provider_ids = list(set(provider_ids + [_oid(p) for p in sr_providers]))
 
     if all_provider_ids:
@@ -140,12 +188,12 @@ def get_stats():
         compliance_rate = round(verified_docs / total_docs * 100) if total_docs > 0 else 0
     else:
         compliance_rate = 0
-        total_docs = 0
-        verified_docs = 0
+        total_docs      = 0
+        verified_docs   = 0
 
     # ── 3. QR Scans Today ─────────────────────────────────────────────────────
-    today_start = _now().replace(hour=0, minute=0, second=0, microsecond=0)
-    scans_today = db.scan_jobs.count_documents({
+    today_start     = _now().replace(hour=0, minute=0, second=0, microsecond=0)
+    scans_today     = db.scan_jobs.count_documents({
         "clientOrgId": my_oid,
         "scannedAt": {"$gte": today_start},
     })
@@ -159,7 +207,7 @@ def get_stats():
     scan_diff = scans_today - scans_yesterday
 
     # ── 4. Expiring Docs (within 30 days) ─────────────────────────────────────
-    in_30_days = _now() + timedelta(days=30)
+    in_30_days   = _now() + timedelta(days=30)
     expiring_docs = db.compliance_documents.count_documents({
         "orgId": {"$in": all_provider_ids} if all_provider_ids else {"$in": []},
         "status": {"$in": ["verified", "pending_review"]},
@@ -168,27 +216,27 @@ def get_stats():
 
     return jsonify({
         "activeProviders": {
-            "value":      active_providers,
+            "value":        active_providers,
             "newThisMonth": new_this_month,
-            "trend":      f"+{new_this_month}" if new_this_month > 0 else "0",
-            "trendUp":    new_this_month > 0,
-            "sub":        f"{new_this_month} onboarded this month",
+            "trend":        f"+{new_this_month}" if new_this_month > 0 else "0",
+            "trendUp":      new_this_month > 0,
+            "sub":          f"{new_this_month} onboarded this month",
         },
         "complianceRate": {
-            "value":      f"{compliance_rate}%",
-            "target":     90,
-            "totalDocs":  total_docs,
+            "value":        f"{compliance_rate}%",
+            "target":       90,
+            "totalDocs":    total_docs,
             "verifiedDocs": verified_docs,
-            "trend":      f"{compliance_rate - 90}%" if compliance_rate < 90 else f"+{compliance_rate - 90}%",
-            "trendUp":    compliance_rate >= 90,
-            "sub":        "Target 90%",
+            "trend":        f"{compliance_rate - 90}%" if compliance_rate < 90 else f"+{compliance_rate - 90}%",
+            "trendUp":      compliance_rate >= 90,
+            "sub":          "Target 90%",
         },
         "qrScansToday": {
-            "value":      scans_today,
-            "yesterday":  scans_yesterday,
-            "trend":      f"+{scan_diff}" if scan_diff >= 0 else str(scan_diff),
-            "trendUp":    scan_diff >= 0,
-            "sub":        f"{abs(scan_diff)} {'more' if scan_diff >= 0 else 'fewer'} than yesterday",
+            "value":     scans_today,
+            "yesterday": scans_yesterday,
+            "trend":     f"+{scan_diff}" if scan_diff >= 0 else str(scan_diff),
+            "trendUp":   scan_diff >= 0,
+            "sub":       f"{abs(scan_diff)} {'more' if scan_diff >= 0 else 'fewer'} than yesterday",
         },
         "expiringDocs": {
             "value":      expiring_docs,
@@ -234,7 +282,7 @@ def scan_chart():
 
         buckets = defaultdict(lambda: {"qrVerified": 0, "manual": 0})
         for j in jobs:
-            ts  = j.get("scannedAt")
+            ts = j.get("scannedAt")
             if not ts:
                 continue
             if ts.tzinfo is None:
@@ -248,7 +296,7 @@ def scan_chart():
         # Build ordered list for last 24 hours
         groups = []
         for h in range(24):
-            t = (now - timedelta(hours=23 - h))
+            t   = (now - timedelta(hours=23 - h))
             lbl = t.strftime("%-Hh")
             groups.append({"label": lbl, **buckets[lbl]})
 
@@ -275,7 +323,7 @@ def scan_chart():
 
         groups = []
         for d in range(7):
-            t = now - timedelta(days=6 - d)
+            t   = now - timedelta(days=6 - d)
             lbl = t.strftime("%a")
             groups.append({"label": lbl, **buckets[lbl]})
 
@@ -297,7 +345,7 @@ def scan_chart():
             # week number within the 30-day window
             days_ago = (now - ts).days
             week_num = (29 - days_ago) // 7 + 1   # 1 = oldest, 4 = newest
-            label = f"Wk {week_num}"
+            label    = f"Wk {week_num}"
             if j.get("status") == "verified":
                 buckets[label]["qrVerified"] += 1
             else:
@@ -331,7 +379,7 @@ def scan_chart():
         quarter_labels = []
         cur = now
         for _ in range(8):
-            q   = (cur.month - 1) // 3 + 1
+            q = (cur.month - 1) // 3 + 1
             quarter_labels.append(f"{cur.year} Q{q}")
             # step back one quarter
             if cur.month <= 3:
@@ -385,7 +433,7 @@ def provider_ranking():
     agg = list(db.service_requests.aggregate(pipeline))
 
     rankings = []
-    top_n = max(3, limit // 2)          # top half get the "top" badge
+    top_n    = max(3, limit // 2)          # top half get the "top" badge
     for i, row in enumerate(agg):
         org = db.organizations.find_one({"_id": row["_id"]}, {"name": 1})
         rankings.append({
@@ -438,22 +486,22 @@ def recent_scans():
 
     # Status → frontend display label + badge class
     STATUS_MAP = {
-        "verified":    ("Verified",  "verified"),
-        "completed":   ("Verified",  "verified"),
-        "failed":      ("Mismatch",  "warn"),
-        "pending":     ("Pending",   "gray"),
+        "verified":    ("Verified",    "verified"),
+        "completed":   ("Verified",    "verified"),
+        "failed":      ("Mismatch",    "warn"),
+        "pending":     ("Pending",     "gray"),
         "in_progress": ("In Progress", "gray"),
     }
 
     out = []
     for j in jobs:
-        raw_status = j.get("status", "")
+        raw_status        = j.get("status", "")
         display, css_class = STATUS_MAP.get(raw_status, ("Unknown", "gray"))
 
         # Resolve site label
         site_label = j.get("location", "")
         if not site_label and j.get("siteLocationId"):
-            site = db.site_locations.find_one(
+            site       = db.site_locations.find_one(
                 {"_id": j["siteLocationId"]}, {"label": 1}
             )
             site_label = site["label"] if site else ""
@@ -461,13 +509,13 @@ def recent_scans():
         # Resolve provider org name
         provider_name = ""
         if j.get("providerOrgId"):
-            org = db.organizations.find_one(
+            org           = db.organizations.find_one(
                 {"_id": j["providerOrgId"]}, {"name": 1}
             )
             provider_name = org["name"] if org else ""
 
-        # Determine scan type: if it was a booking QR scan it has completedAt;
-        # site-arrival QR scans have startedAt; anything else is "manual"
+        # Determine scan type: booking QR scans have completedAt,
+        # site-arrival QR scans have startedAt, anything else is "manual"
         if j.get("completedAt") or j.get("startedAt"):
             scan_type = "qr"
         else:
