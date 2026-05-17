@@ -1,8 +1,5 @@
 /**
  * BiVerify API client — client/src/api/client.js
- *
- * Add the `b2b` export below to the existing file.
- * Everything above the "── B2B ──" comment is unchanged from the original.
  */
 
 import axios from "axios";
@@ -72,96 +69,38 @@ export const bookings = {
 
 export const locations = {
   list: () => api.get("/api/locations").then((r) => r.data),
-  create: (label, address) => api.post("/api/locations", { label, address }).then((r) => r.data),
+  create: (label, address) =>
+    api.post("/api/locations", { label, address }).then((r) => r.data),
 };
 
 export const compliance = {
   getStats: () => api.get("/api/compliance/stats").then((r) => r.data),
-  listVerifications: () => api.get("/api/compliance/verifications").then((r) => r.data),
+  listVerifications: () =>
+    api.get("/api/compliance/verifications").then((r) => r.data),
   listOrders: () => api.get("/api/compliance/orders").then((r) => r.data),
 };
 
 // ── B2B ──────────────────────────────────────────────────────────────────────
 
 export const b2b = {
-  /**
-   * Search platform orgs to connect with.
-   * @param {Object} params  { q?, type?: "client"|"provider", limit?, skip? }
-   * @returns {Promise<{ orgs: Array, total: number }>}
-   */
   searchOrgs: (params = {}) =>
     api.get("/api/b2b/orgs/search", { params }).then((r) => r.data),
-
-  /**
-   * List your connected partners.
-   * @param {Object} params  { search?, type?: "client"|"provider", limit?, skip? }
-   * @returns {Promise<{ partners: Array, total: number }>}
-   */
   listPartners: (params = {}) =>
     api.get("/api/b2b/partners", { params }).then((r) => r.data),
-
-  /**
-   * Full profile of one connected partner.
-   * @param {string} connectionId
-   * @returns {Promise<{ partner: Object }>}
-   */
   getPartner: (connectionId) =>
     api.get(`/api/b2b/partners/${connectionId}`).then((r) => r.data),
-
-  /**
-   * Pending requests received by your org.
-   * @returns {Promise<{ requests: Array, total: number }>}
-   */
   receivedRequests: () =>
     api.get("/api/b2b/requests/received").then((r) => r.data),
-
-  /**
-   * Pending requests sent by your org.
-   * @returns {Promise<{ requests: Array, total: number }>}
-   */
   sentRequests: () =>
     api.get("/api/b2b/requests/sent").then((r) => r.data),
-
-  /**
-   * Send a connection request.
-   * @param {string} targetOrgId
-   * @param {string} [notes]
-   * @returns {Promise<Object>}  the new connection doc
-   */
   sendRequest: (targetOrgId, notes = "") =>
     api.post("/api/b2b/requests", { targetOrgId, notes }).then((r) => r.data),
-
-  /**
-   * Accept a received connection request.
-   * @param {string} connectionId
-   */
   acceptRequest: (connectionId) =>
-    api
-      .patch(`/api/b2b/requests/${connectionId}/accept`)
-      .then((r) => r.data),
-
-  /**
-   * Decline a received connection request.
-   * @param {string} connectionId
-   */
+    api.patch(`/api/b2b/requests/${connectionId}/accept`).then((r) => r.data),
   declineRequest: (connectionId) =>
-    api
-      .patch(`/api/b2b/requests/${connectionId}/decline`)
-      .then((r) => r.data),
-
-  /**
-   * Cancel a sent (pending) connection request.
-   * @param {string} connectionId
-   */
+    api.patch(`/api/b2b/requests/${connectionId}/decline`).then((r) => r.data),
   cancelRequest: (connectionId) =>
-    api
-      .patch(`/api/b2b/requests/${connectionId}/cancel`)
-      .then((r) => r.data),
-
-  /**
-   * Disconnect from an existing partner.
-   * @param {string} connectionId
-   */
+    api.patch(`/api/b2b/requests/${connectionId}/cancel`).then((r) => r.data),
   disconnect: (connectionId) =>
     api.delete(`/api/b2b/partners/${connectionId}`).then((r) => r.data),
 };
@@ -169,44 +108,58 @@ export const b2b = {
 // ── CLIENT DASHBOARD ─────────────────────────────────────────────────────────
 
 export const clientDashboard = {
-  /**
-   * 4 KPI stat cards.
-   * @returns {Promise<{ activeProviders, complianceRate, qrScansToday, expiringDocs }>}
-   */
   stats: () =>
-    api.get("/api/client/dashboard/stats").then((r) => r.data), // ✓ correct — matches the backend blueprint prefix /api/client/dashboard/me
-me: () => api.get("/api/client/dashboard/me").then((r) => r.data),
-
-  /**
-   * Bar-chart data grouped by period.
-   * @param {"year"|"month"|"week"|"day"} period
-   * @returns {Promise<{ groups: Array<{label, qrVerified, manual}>, period }>}
-   */
+    api.get("/api/client/dashboard/stats").then((r) => r.data),
+  me: () =>
+    api.get("/api/client/dashboard/me").then((r) => r.data),
   scanChart: (period = "year") =>
     api.get("/api/client/dashboard/scan-chart", { params: { period } }).then((r) => r.data),
-
-  /**
-   * Provider ranking by verified/completed job count.
-   * @param {number} limit
-   * @returns {Promise<{ rankings: Array }>}
-   */
   providerRanking: (limit = 7) =>
-    api
-      .get("/api/client/dashboard/provider-ranking", { params: { limit } })
-      .then((r) => r.data),
-
-  /**
-   * Recent QR scan rows for the bottom table.
-   * @param {number} limit
-   * @returns {Promise<{ scans: Array }>}
-   */
+    api.get("/api/client/dashboard/provider-ranking", { params: { limit } }).then((r) => r.data),
   recentScans: (limit = 12) =>
-    api
-      .get("/api/client/dashboard/recent-scans", { params: { limit } })
-      .then((r) => r.data),
+    api.get("/api/client/dashboard/recent-scans", { params: { limit } }).then((r) => r.data),
 };
 
+// ── CLIENT COMPLIANCE VAULT ───────────────────────────────────────────────────
 
+export const complianceVault = {
+  stats:       ()            => api.get("/api/compliance-vault/stats").then((r) => r.data),
+  list:        (params = {}) => api.get("/api/compliance-vault/documents", { params }).then((r) => r.data),
+  get:         (id)          => api.get(`/api/compliance-vault/documents/${id}`).then((r) => r.data),
+  downloadUrl: (id)          => api.get(`/api/compliance-vault/documents/${id}/download`).then((r) => r.data),
+};
+
+// ── PROVIDER COMPLIANCE DOCUMENTS ────────────────────────────────────────────
+
+export const providerCompliance = {
+  stats: () =>
+    api.get("/api/provider/compliance/stats").then((r) => r.data),
+  list: (params = {}) =>
+    api.get("/api/provider/compliance/documents", { params }).then((r) => r.data),
+  get: (id) =>
+    api.get(`/api/provider/compliance/documents/${id}`).then((r) => r.data),
+  create: (payload) =>
+    api.post("/api/provider/compliance/documents", payload).then((r) => r.data),
+  update: (id, payload) =>
+    api.patch(`/api/provider/compliance/documents/${id}`, payload).then((r) => r.data),
+  remove: (id) =>
+    api.delete(`/api/provider/compliance/documents/${id}`).then((r) => r.data),
+  downloadUrl: (id) =>
+    api.get(`/api/provider/compliance/documents/${id}/download`).then((r) => r.data),
+};
+
+// ── CLIENT SETTINGS ───────────────────────────────────────────────────────────
+
+export const clientSettings = {
+  getProfile: () =>
+    api.get("/api/client/settings/profile").then((r) => r.data),
+  updateProfile: (payload) =>
+    api.patch("/api/client/settings/profile", payload).then((r) => r.data),
+  changePassword: (currentPassword, newPassword) =>
+    api.patch("/api/client/settings/password", { currentPassword, newPassword }).then((r) => r.data),
+};
+
+// ── SESSION HELPERS ───────────────────────────────────────────────────────────
 
 export function saveSession(token, user) {
   localStorage.setItem("biverify_token", token);
@@ -228,9 +181,12 @@ export function apiErrorMessage(err) {
     err?.response?.data?.error?.message ||
     err?.response?.data?.message ||
     err?.response?.data?.detail ||
-    (err?.response?.status === 409 ? "This booking cannot be cancelled in its current status." : null) ||
+    (err?.response?.status === 409
+      ? "This booking cannot be cancelled in its current status."
+      : null) ||
     err?.message ||
     "Something went wrong"
   );
 }
+
 export default api;

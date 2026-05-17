@@ -17,14 +17,15 @@ def _err(code, msg, status):
 
 def _user_public(u):
     db = get_db()
-    org = db.organizations.find_one({"_id": u["orgId"]}, {"type": 1}) or {}
+    org = db.organizations.find_one({"_id": u["orgId"]}, {"type": 1, "name": 1}) or {}
     return {
         "id": str(u["_id"]),
         "fullName": u.get("fullName"),
         "email": u.get("email"),
         "role": u.get("role"),
         "orgId": str(u["orgId"]),
-        "orgType": org.get("type", "client"),   # "client" | "provider"
+        "orgName": org.get("name", ""),          # ← NEW: organisation display name
+        "orgType": org.get("type", "client"),    # "client" | "provider"
     }
 
 

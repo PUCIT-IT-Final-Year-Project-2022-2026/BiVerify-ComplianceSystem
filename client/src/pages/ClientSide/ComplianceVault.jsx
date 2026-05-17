@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { complianceVault, apiErrorMessage, auth, getUser } from "../../api/client";
+import api from "../../api/client";
 
 const C = {
   primary:   "#2b9d4e",
@@ -148,6 +150,15 @@ const css = `
   /* doc row position relative for urgency bar */
   .doc-row { position: relative; overflow: hidden; }
 
+  /* ── SKELETON LOADER ── */
+  .skeleton { animation: shimmer 1.4s infinite; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; border-radius: 8px; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .skel-row { height: 68px; border-radius: 11px; margin-bottom: 8px; }
+  .skel-stat { height: 66px; border-radius: 12px; }
+
+  /* ── ERROR BANNER ── */
+  .error-banner { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.22); border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; font-size: 13px; color: #991b1b; }
+
   /* ── EMPTY STATE ── */
   .empty { text-align: center; padding: 40px 20px; color: ${C.muted}; }
   .empty-ico { width: 48px; height: 48px; background: ${C.bgIcon}; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
@@ -171,6 +182,7 @@ const css = `
   .modal-preview-sub  { font-size: 11.5px; color: ${C.muted}; }
   .modal-download { width: 100%; background: ${C.primary}; color: #fff; border: none; border-radius: 9px; padding: 10px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 14px; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; justify-content: center; gap: 7px; }
   .modal-download:hover { background: ${C.dark}; }
+  .modal-download:disabled { opacity: 0.6; cursor: not-allowed; }
 
   /* ── TOAST ── */
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: ${C.dark}; color: #fff; padding: 11px 20px; border-radius: 10px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; z-index: 999; white-space: nowrap; animation: tUp 0.22s ease; }
@@ -207,21 +219,11 @@ const Ico = ({ n, s = 15, c = "currentColor" }) => {
     download:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
     clock:   <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
     filter:  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>,
+    refresh: <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>,
+    map:     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>,
   };
   return d[n] || null;
 };
-
-const ALL_DOCS = [
-  { id:1,  provider:"GoodMe Solutions",    initials:"GS", pavCls:"pav-green", docType:"Liability Insurance",   expiry:"2026-04-28", daysLeft:43,  status:"approved", uploadedBy:"goodme",    fileType:"PDF" },
-  { id:2,  provider:"CleanTech Solutions", initials:"CT", pavCls:"pav-green", docType:"Tax Registration",      expiry:"2026-06-15", daysLeft:91,  status:"approved", uploadedBy:"cleantech", fileType:"PDF" },
-  { id:3,  provider:"GreenClean Services", initials:"GC", pavCls:"pav-green", docType:"Business License",      expiry:"2026-05-10", daysLeft:55,  status:"approved", uploadedBy:"greenclean",fileType:"PDF" },
-  { id:4,  provider:"TechFix Pakistan",    initials:"TF", pavCls:"pav-green", docType:"ISO 9001 Certificate",  expiry:"2026-03-24", daysLeft:8,   status:"expiring", uploadedBy:"techfix",   fileType:"PDF" },
-  { id:5,  provider:"SafeGuard Security",  initials:"SG", pavCls:"pav-warn",  docType:"Business License",      expiry:"2026-03-28", daysLeft:12,  status:"expiring", uploadedBy:"safeguard", fileType:"PDF" },
-  { id:6,  provider:"GoodMe Solutions",    initials:"GS", pavCls:"pav-warn",  docType:"ISO 9001 Certificate",  expiry:"2026-03-22", daysLeft:6,   status:"expiring", uploadedBy:"goodme",    fileType:"PDF" },
-  { id:7,  provider:"PowerSystems Ltd",    initials:"PS", pavCls:"pav-danger",docType:"Health & Safety Cert",  expiry:"2026-03-10", daysLeft:-6,  status:"expired",  uploadedBy:"powersys",  fileType:"PDF" },
-  { id:8,  provider:"PowerSystems Ltd",    initials:"PS", pavCls:"pav-danger",docType:"Electrical License",    expiry:"2026-03-01", daysLeft:-15, status:"expired",  uploadedBy:"powersys",  fileType:"PDF" },
-  { id:9,  provider:"AquaFlow Services",   initials:"AF", pavCls:"pav-green", docType:"Plumbing Certification",expiry:"2026-08-20", daysLeft:157, status:"pending",  uploadedBy:"aquaflow",  fileType:"PDF" },
-];
 
 function statusInfo(doc) {
   if (doc.status === "expired")  return { cls:"b-danger", label:"Expired",  dlCls:"dl-danger", expCls:"danger" };
@@ -231,27 +233,96 @@ function statusInfo(doc) {
 }
 
 function daysLabel(d) {
-  if (d < 0)  return `${Math.abs(d)}d overdue`;
-  if (d === 0) return "Expires today";
+  if (d == null) return "No expiry set";
+  if (d < 0)    return `${Math.abs(d)}d overdue`;
+  if (d === 0)  return "Expires today";
   return `${d}d left`;
 }
 
 const FILTERS = ["All", "Expired", "Expiring", "Approved", "Pending"];
 
 export default function ComplianceVault() {
-  const [search, setSearch]     = useState("");
-  const [filter, setFilter]     = useState("All");
-  const [preview, setPreview]   = useState(null);
-  const [toast, setToast]       = useState(null);
+  const [docs,        setDocs]        = useState([]);
+  const [stats,       setStats]       = useState({ expired: 0, expiring: 0, approved: 0, pending: 0 });
+  const [loading,     setLoading]     = useState(true);
+  const [error,       setError]       = useState(null);
+  const [search,      setSearch]      = useState("");
+  const [filter,      setFilter]      = useState("All");
+  const [preview,     setPreview]     = useState(null);
+  const [toast,       setToast]       = useState(null);
+  const [downloading, setDownloading] = useState(false);
+
+  // ── Logged-in user (from localStorage, enriched via /api/auth/me) ──────────
+  const [currentUser, setCurrentUser] = useState(() => getUser() || {});
+  const [activeSite,  setActiveSite]  = useState(null);   // first site from /api/locations
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2500); };
 
-  const filtered = ALL_DOCS.filter(d => {
+  // ── Fetch current user profile & active site on mount ────────────────────
+  useEffect(() => {
+    // Refresh user data (picks up orgName which login now returns)
+    auth.me()
+      .then(res => {
+        if (res?.user) {
+          setCurrentUser(res.user);
+          // Keep localStorage in sync so other pages also benefit
+          try {
+            const stored = JSON.parse(localStorage.getItem("biverify_user") || "{}");
+            localStorage.setItem("biverify_user", JSON.stringify({ ...stored, ...res.user }));
+          } catch { /* ignore */ }
+        }
+      })
+      .catch(() => { /* silent – use cached value */ });
+
+    // Fetch org's site locations and show the first active one
+    api.get("/api/locations")
+      .then(res => {
+        const sites = res.data;
+        if (Array.isArray(sites) && sites.length > 0) {
+          const active = sites.find(s => s.isActive !== false) || sites[0];
+          setActiveSite(active.label);
+        }
+      })
+      .catch(() => { /* silent – no site badge shown */ });
+  }, []);
+
+  // ── Derived nav values ────────────────────────────────────────────────────
+  // orgName is now returned by the backend; fall back to fullName or email
+  const navName = currentUser?.orgName || currentUser?.fullName || currentUser?.email || "My Org";
+  const navInitials = navName
+    .split(" ")
+    .map(w => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "??";
+
+  // ── Fetch stats + documents ───────────────────────────────────────────────
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [statsRes, docsRes] = await Promise.all([
+        complianceVault.stats(),
+        complianceVault.list({ limit: 200 }),
+      ]);
+      setStats(statsRes);
+      setDocs(docsRes.documents || []);
+    } catch (err) {
+      setError(apiErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  // ── Client-side filter + search (instant UX) ──────────────────────────────
+  const filtered = docs.filter(d => {
     const q = search.toLowerCase();
     const matchSearch = d.provider.toLowerCase().includes(q) || d.docType.toLowerCase().includes(q);
     const matchFilter =
       filter === "All"      ? true :
-      filter === "Expired"  ? d.status === "expired" :
+      filter === "Expired"  ? d.status === "expired"  :
       filter === "Expiring" ? d.status === "expiring" :
       filter === "Approved" ? d.status === "approved" :
       filter === "Pending"  ? d.status === "pending"  : true;
@@ -262,21 +333,35 @@ export default function ComplianceVault() {
   const expiring = filtered.filter(d => d.status === "expiring");
   const valid    = filtered.filter(d => d.status === "approved" || d.status === "pending");
 
-  const totalExpired  = ALL_DOCS.filter(d => d.status === "expired").length;
-  const totalExpiring = ALL_DOCS.filter(d => d.status === "expiring").length;
-  const totalValid    = ALL_DOCS.filter(d => d.status === "approved").length;
-  const totalPending  = ALL_DOCS.filter(d => d.status === "pending").length;
+  // ── Download handler ──────────────────────────────────────────────────────
+  const handleDownload = async (doc) => {
+    setDownloading(true);
+    try {
+      const res = await complianceVault.downloadUrl(doc.id);
+      if (res.url) {
+        window.open(res.url, "_blank", "noopener,noreferrer");
+        showToast(`Downloading ${doc.docType}…`);
+      } else {
+        showToast("File URL not available");
+      }
+    } catch (err) {
+      showToast(apiErrorMessage(err));
+    } finally {
+      setDownloading(false);
+      setPreview(null);
+    }
+  };
 
+  // ── Sub-components ────────────────────────────────────────────────────────
   const DocRow = ({ doc }) => {
     const si = statusInfo(doc);
     const isExpired  = doc.status === "expired";
     const isExpiring = doc.status === "expiring";
-    const diCls = isExpired ? "di-d" : isExpiring ? "di-w" : "di-ok";
-    const docIcoC = isExpired ? C.danger : isExpiring ? C.warning : C.primary;
+    const diCls    = isExpired ? "di-d" : isExpiring ? "di-w" : "di-ok";
+    const docIcoC  = isExpired ? C.danger : isExpiring ? C.warning : C.primary;
 
     return (
       <div className={`doc-row ${isExpired ? "expired" : isExpiring ? "expiring" : ""}`}>
-        {/* urgency bar */}
         {isExpired  && <div className="urgency-bar ub-danger"/>}
         {isExpiring && <div className="urgency-bar ub-warn"/>}
 
@@ -298,7 +383,9 @@ export default function ComplianceVault() {
         <div className="doc-expiry">
           <div className="exp-label">Expiry</div>
           <div className={`exp-date ${si.expCls}`}>
-            {new Date(doc.expiry).toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" })}
+            {doc.expiry
+              ? new Date(doc.expiry).toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" })
+              : "—"}
           </div>
           <div className={`days-left ${si.dlCls}`}>{daysLabel(doc.daysLeft)}</div>
         </div>
@@ -310,19 +397,31 @@ export default function ComplianceVault() {
     );
   };
 
-  const Section = ({ title, docs, countCls, noDocsMsg }) => {
-    if (docs.length === 0) return null;
+  const Section = ({ title, docs: sectionDocs, countCls }) => {
+    if (sectionDocs.length === 0) return null;
     return (
       <div className="vault-section">
         <div className="sec-label-row">
           <span className="sec-label">{title}</span>
-          <span className={`sec-count ${countCls}`}>{docs.length}</span>
+          <span className={`sec-count ${countCls}`}>{sectionDocs.length}</span>
           <div className="sec-line"/>
         </div>
-        {docs.map(d => <DocRow key={d.id} doc={d}/>)}
+        {sectionDocs.map(d => <DocRow key={d.id} doc={d}/>)}
       </div>
     );
   };
+
+  const SkeletonStrip = () => (
+    <div className="stat-strip fu fu1">
+      {[0,1,2,3].map(i => <div key={i} className="skeleton skel-stat"/>)}
+    </div>
+  );
+
+  const SkeletonRows = () => (
+    <div className="fu fu3">
+      {[0,1,2,3,4].map(i => <div key={i} className="skeleton skel-row"/>)}
+    </div>
+  );
 
   return (
     <>
@@ -336,10 +435,20 @@ export default function ComplianceVault() {
           <div className="nav-div"/><span className="nav-pg">Compliance Vault</span>
         </div>
         <div className="nav-right">
-          <div className="nav-site"><span className="pulse"/>Site A – Lahore HQ</div>
-          <button className="notif-btn"><Ico n="bell" s={15} c="rgba(255,255,255,0.85)"/><span className="notif-pip"/></button>
-          <div className="nav-av">AC</div>
-          <span className="nav-name">Acme Corp</span>
+          {/* Site badge – real data from /api/locations */}
+          {activeSite && (
+            <div className="nav-site">
+              <span className="pulse"/>
+              <Ico n="map" s={11} c="rgba(255,255,255,0.75)"/>
+              {activeSite}
+            </div>
+          )}
+          <button className="notif-btn">
+            <Ico n="bell" s={15} c="rgba(255,255,255,0.85)"/><span className="notif-pip"/>
+          </button>
+          {/* Profile icon – real logged-in user */}
+          <div className="nav-av" title={navName}>{navInitials}</div>
+          <span className="nav-name">{navName}</span>
         </div>
       </nav>
 
@@ -353,45 +462,71 @@ export default function ComplianceVault() {
           </div>
           <div className="page-title-row">
             <div className="page-title">Compliance Vault</div>
-            <div className="verified-badge">
-              <Ico n="shield" s={13} c={C.primary}/>
-              Verified by Platform
+            <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+              {!loading && (
+                <button
+                  onClick={fetchData}
+                  style={{ background:"none", border:`1px solid ${C.borderMed}`, borderRadius:8, padding:"5px 10px", cursor:"pointer", display:"flex", alignItems:"center", gap:5, color:C.primary, fontSize:12 }}
+                >
+                  <Ico n="refresh" s={12} c={C.primary}/> Refresh
+                </button>
+              )}
+              <div className="verified-badge">
+                <Ico n="shield" s={13} c={C.primary}/>
+                Verified by Platform
+              </div>
             </div>
           </div>
         </div>
 
+        {/* ERROR BANNER */}
+        {error && (
+          <div className="error-banner">
+            <Ico n="alert" s={16} c={C.danger}/>
+            {error}
+            <button onClick={fetchData} style={{ marginLeft:"auto", background:C.danger, color:"#fff", border:"none", borderRadius:6, padding:"4px 10px", fontSize:12, cursor:"pointer" }}>
+              Retry
+            </button>
+          </div>
+        )}
+
         {/* STAT STRIP */}
-        <div className="stat-strip fu fu1">
-          <div className="stat-card">
-            <div className="stat-ico danger"><Ico n="alert" s={18} c={C.danger}/></div>
-            <div><div className="stat-val">{totalExpired}</div><div className="stat-lbl">Expired</div></div>
+        {loading ? <SkeletonStrip/> : (
+          <div className="stat-strip fu fu1">
+            <div className="stat-card">
+              <div className="stat-ico danger"><Ico n="alert" s={18} c={C.danger}/></div>
+              <div><div className="stat-val">{stats.expired}</div><div className="stat-lbl">Expired</div></div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-ico warn"><Ico n="clock" s={18} c={C.warning}/></div>
+              <div><div className="stat-val">{stats.expiring}</div><div className="stat-lbl">Expiring soon</div></div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-ico green"><Ico n="check" s={18} c={C.primary}/></div>
+              <div><div className="stat-val">{stats.approved}</div><div className="stat-lbl">Approved</div></div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-ico gray"><Ico n="doc" s={18} c={C.muted}/></div>
+              <div><div className="stat-val">{stats.pending}</div><div className="stat-lbl">Pending review</div></div>
+            </div>
           </div>
-          <div className="stat-card">
-            <div className="stat-ico warn"><Ico n="clock" s={18} c={C.warning}/></div>
-            <div><div className="stat-val">{totalExpiring}</div><div className="stat-lbl">Expiring soon</div></div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-ico green"><Ico n="check" s={18} c={C.primary}/></div>
-            <div><div className="stat-val">{totalValid}</div><div className="stat-lbl">Approved</div></div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-ico gray"><Ico n="doc" s={18} c={C.muted}/></div>
-            <div><div className="stat-val">{totalPending}</div><div className="stat-lbl">Pending review</div></div>
-          </div>
-        </div>
+        )}
 
         {/* TOOLBAR */}
         <div className="toolbar fu fu2">
           <div className="search-wrap">
             <Ico n="search" s={14} c={C.muted}/>
-            <input placeholder="Search by provider or document type…"
-              value={search} onChange={e => setSearch(e.target.value)}/>
+            <input
+              placeholder="Search by provider or document type…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
           </div>
           <div className="filter-pills">
             {FILTERS.map(f => (
               <button key={f} className={`fpill ${
                 filter === f
-                  ? f === "Expired" ? "active-danger"
+                  ? f === "Expired"  ? "active-danger"
                   : f === "Expiring" ? "active-warn"
                   : "active"
                   : ""
@@ -401,21 +536,27 @@ export default function ComplianceVault() {
         </div>
 
         {/* GROUPED SECTIONS */}
-        <div className="fu fu3">
-          {expired.length === 0 && expiring.length === 0 && valid.length === 0 ? (
-            <div className="empty">
-              <div className="empty-ico"><Ico n="search" s={22} c={C.primary}/></div>
-              <div className="empty-t">No documents found</div>
-              <div className="empty-s">Try adjusting your search or filter</div>
-            </div>
-          ) : (
-            <>
-              <Section title="Expired" docs={expired}  countCls="sc-danger"/>
-              <Section title="Expiring Soon" docs={expiring} countCls="sc-warn"/>
-              <Section title="Valid" docs={valid}    countCls="sc-ok"/>
-            </>
-          )}
-        </div>
+        {loading ? <SkeletonRows/> : (
+          <div className="fu fu3">
+            {expired.length === 0 && expiring.length === 0 && valid.length === 0 ? (
+              <div className="empty">
+                <div className="empty-ico"><Ico n="search" s={22} c={C.primary}/></div>
+                <div className="empty-t">No documents found</div>
+                <div className="empty-s">
+                  {docs.length === 0
+                    ? "No provider compliance documents are available yet."
+                    : "Try adjusting your search or filter."}
+                </div>
+              </div>
+            ) : (
+              <>
+                <Section title="Expired"       docs={expired}  countCls="sc-danger"/>
+                <Section title="Expiring Soon" docs={expiring} countCls="sc-warn"/>
+                <Section title="Valid"         docs={valid}    countCls="sc-ok"/>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* DOCUMENT PREVIEW MODAL */}
@@ -431,7 +572,9 @@ export default function ComplianceVault() {
                 { l:"Provider",      v: preview.provider },
                 { l:"Uploaded by",   v: preview.uploadedBy },
                 { l:"Document type", v: preview.docType },
-                { l:"Expiry date",   v: new Date(preview.expiry).toLocaleDateString("en-GB", { day:"numeric", month:"long", year:"numeric" }) },
+                { l:"Expiry date",   v: preview.expiry
+                    ? new Date(preview.expiry).toLocaleDateString("en-GB", { day:"numeric", month:"long", year:"numeric" })
+                    : "—" },
                 { l:"Days left",     v: daysLabel(preview.daysLeft) },
                 { l:"Status",        v: statusInfo(preview).label },
                 { l:"File type",     v: preview.fileType },
@@ -446,12 +589,19 @@ export default function ComplianceVault() {
                 <div className="modal-preview-ico">
                   <Ico n="doc" s={22} c={C.primary}/>
                 </div>
-                <div className="modal-preview-name">{preview.docType}.pdf</div>
+                <div className="modal-preview-name">
+                  {preview.fileName || `${preview.docType}.pdf`}
+                </div>
                 <div className="modal-preview-sub">Uploaded by {preview.uploadedBy}</div>
               </div>
 
-              <button className="modal-download" onClick={() => { setPreview(null); showToast(`Downloading ${preview.docType}…`); }}>
-                <Ico n="download" s={14} c="#fff"/> Download File
+              <button
+                className="modal-download"
+                disabled={downloading}
+                onClick={() => handleDownload(preview)}
+              >
+                <Ico n="download" s={14} c="#fff"/>
+                {downloading ? "Opening…" : "Download File"}
               </button>
             </div>
           </div>
