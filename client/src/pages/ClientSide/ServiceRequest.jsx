@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import api, { apiErrorMessage } from "../../api/client";
+import api, { apiErrorMessage, getUser } from "../../api/client";
 
 // ── API helpers ───────────────────────────────────────────────────────────────
 const srApi = {
@@ -504,6 +504,11 @@ export default function ServiceRequest() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
+  // ── logged-in user (same pattern as ServiceBookings) ──────────────────────
+  const currentUser  = getUser();
+  const userName     = currentUser?.organizationName || currentUser?.name || currentUser?.email || "User";
+  const userInitials = userName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+
   const [step, setStep]             = useState(0);
   const [toast, setToast]           = useState(null);
   const [submitErr, setSubmitErr]   = useState("");
@@ -643,7 +648,7 @@ export default function ServiceRequest() {
           </div>
           <div className="nav-right">
             <button className="notif-btn"><Ico n="bell" s={15} c="rgba(255,255,255,0.85)"/><span className="notif-pip"/></button>
-            <div className="nav-av">AC</div><span className="nav-name">Acme Corp</span>
+            <div className="nav-av">{userInitials}</div><span className="nav-name">{userName}</span>
           </div>
         </nav>
         <div className="page">
@@ -679,7 +684,7 @@ export default function ServiceRequest() {
         </div>
         <div className="nav-right">
           <button className="notif-btn"><Ico n="bell" s={15} c="rgba(255,255,255,0.85)"/><span className="notif-pip"/></button>
-          <div className="nav-av">AC</div><span className="nav-name">Acme Corp</span>
+          <div className="nav-av">{userInitials}</div><span className="nav-name">{userName}</span>
         </div>
       </nav>
 

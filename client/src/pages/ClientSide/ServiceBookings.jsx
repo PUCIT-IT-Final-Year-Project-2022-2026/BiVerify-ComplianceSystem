@@ -90,8 +90,10 @@ const Ico = ({ n, s = 15, c = "#fff" }) => {
 const SS = {
   completed:  { bg: "rgba(43,157,78,0.10)",  color: "#1f7a3b", border: "1px solid rgba(43,157,78,0.2)",   dot: G         },
   pending:    { bg: "rgba(245,158,11,0.10)", color: "#92400e", border: "1px solid rgba(245,158,11,0.25)", dot: "#F59E0B" },
+  accepted:   { bg: "rgba(43,157,78,0.10)",  color: "#1f7a3b", border: "1px solid rgba(43,157,78,0.2)",   dot: G         },
   inprogress: { bg: "rgba(59,130,246,0.09)", color: "#1d4ed8", border: "1px solid rgba(59,130,246,0.2)",  dot: "#3b82f6" },
   cancelled:  { bg: "rgba(239,68,68,0.08)",  color: "#991b1b", border: "1px solid rgba(239,68,68,0.2)",   dot: "#ef4444" },
+  rejected:   { bg: "rgba(239,68,68,0.08)",  color: "#991b1b", border: "1px solid rgba(239,68,68,0.2)",   dot: "#ef4444" },
 };
 
 /* ─────────────────────────── sidebar ────────────────────────────────────── */
@@ -154,8 +156,9 @@ function BookingDetailModal({ booking, onClose, onCancel, onDownloadQr }) {
   const [cancelling, setCancelling] = useState(false);
   const [qrLoading, setQrLoading]   = useState(false);
   const [cancelErr, setCancelErr]   = useState("");
+  const [cancelSuccess, setCancelSuccess] = useState(false);
 
-  const canCancel = booking.rawStatus === "accepted";
+  const canCancel = booking.rawStatus === "accepted" || booking.rawStatus === "pending";
 
   async function handleCancel() {
     if (!window.confirm("Are you sure you want to cancel this booking?")) return;
@@ -163,7 +166,7 @@ function BookingDetailModal({ booking, onClose, onCancel, onDownloadQr }) {
     setCancelErr("");
     try {
       await onCancel(booking.id);
-      onClose();
+      setCancelSuccess(true);
     } catch (err) {
       setCancelErr(apiErrorMessage(err));
     } finally {
@@ -172,6 +175,10 @@ function BookingDetailModal({ booking, onClose, onCancel, onDownloadQr }) {
   }
 
   async function handleQr() {
+    if (!booking.po && !booking.poId) {
+      alert("No QR code available. This booking was accepted via an incoming request and does not have a purchase order QR yet.");
+      return;
+    }
     setQrLoading(true);
     try {
       await onDownloadQr(booking.id, booking.po || booking.id);
@@ -228,6 +235,11 @@ function BookingDetailModal({ booking, onClose, onCancel, onDownloadQr }) {
           </div>
         ))}
 
+        {cancelSuccess && (
+          <div style={{ marginTop: 14, background: "rgba(43,157,78,0.08)", border: "1px solid rgba(43,157,78,0.25)", borderRadius: 8, padding: "10px 14px", color: "#1f7a3b", fontSize: 12.5, fontWeight: 600 }}>
+            ✓ Booking cancelled successfully.
+          </div>
+        )}
         {cancelErr && (
           <div style={{ marginTop: 14, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 8, padding: "10px 14px", color: "#991b1b", fontSize: 12.5 }}>
             {cancelErr}
@@ -236,20 +248,30 @@ function BookingDetailModal({ booking, onClose, onCancel, onDownloadQr }) {
 
         {/* Action buttons */}
         <div style={{ display: "flex", gap: 8, marginTop: 20 }}>
-          <button onClick={handleQr} disabled={qrLoading} style={{
-            flex: 1, padding: "9px 0", borderRadius: 9, border: `1.5px solid ${G}`,
-            background: "transparent", color: G, fontWeight: 700, fontSize: 13,
-            cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-          }}>
-            <Ico n="qr" s={13} c={G}/>{qrLoading ? "Downloading…" : "Download QR"}
+          <button onClick={handleQr} disabled={qrLoading || (!booking.po && !booking.poId)} style={{
+            flex: 1, padding: "9px 0", borderRadius: 9,
+            border: `1.5px solid ${(!booking.po && !booking.poId) ? "#d1d5db" : G}`,
+            background: "transparent",
+            color: (!booking.po && !booking.poId) ? "#9ca3af" : G,
+            fontWeight: 700, fontSize: 13,
+            cursor: (!booking.po && !booking.poId) ? "not-allowed" : "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+          }}
+          title={(!booking.po && !booking.poId) ? "No QR available for this booking" : "Download QR code"}
+          >
+            <Ico n="qr" s={13} c={(!booking.po && !booking.poId) ? "#9ca3af" : G}/>
+            {qrLoading ? "Downloading…" : "Download QR"}
           </button>
 
           {canCancel && (
             <button onClick={handleCancel} disabled={cancelling} style={{
               flex: 1, padding: "9px 0", borderRadius: 9, border: "1.5px solid #ef4444",
               background: "transparent", color: "#ef4444", fontWeight: 700, fontSize: 13,
-              cursor: "pointer",
+              cursor: cancelling ? "not-allowed" : "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              opacity: cancelling ? 0.7 : 1,
             }}>
+              <Ico n="x" s={13} c="#ef4444"/>
               {cancelling ? "Cancelling…" : "Cancel Booking"}
             </button>
           )}
@@ -353,6 +375,7 @@ export default function ServiceBookings() {
   /* ── cancel handler ── */
   async function handleCancel(id) {
     await bookingsApi.cancel(id);
+    setSelectedBooking(prev => prev ? { ...prev, rawStatus: "cancelled", status: "cancelled", label: "Cancelled" } : prev);
     fetchList();
     fetchStats();
   }
@@ -368,7 +391,17 @@ export default function ServiceBookings() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      alert("Could not download QR: " + apiErrorMessage(err));
+      let msg = "Could not download QR";
+      if (err?.response?.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          const json = JSON.parse(text);
+          msg = json?.error?.message || json?.message || msg;
+        } catch (_) {}
+      } else {
+        msg = "Could not download QR: " + apiErrorMessage(err);
+      }
+      alert(msg);
     }
   }
 
@@ -378,14 +411,16 @@ export default function ServiceBookings() {
     setSearch(searchInput.trim());
   }
 
-  const pendingCount = bookingList.filter(b => b.status === "pending").length;
+  const pendingCount = bookingList.filter(b => b.status === "pending" || b.status === "accepted").length;
 
   const FILTER_TABS = [
     { id: "all",        label: "All"         },
     { id: "pending",    label: "Pending"     },
+    { id: "accepted",   label: "Accepted"    },
     { id: "inprogress", label: "In Progress" },
     { id: "completed",  label: "Completed"   },
     { id: "cancelled",  label: "Cancelled"   },
+    { id: "rejected",   label: "Rejected"    },
   ];
 
   return (

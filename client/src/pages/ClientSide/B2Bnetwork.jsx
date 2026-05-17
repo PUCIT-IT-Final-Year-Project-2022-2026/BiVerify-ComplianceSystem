@@ -38,8 +38,37 @@ const css = `
   .topnav-site { background: ${C.dark}; border-radius: 20px; padding: 4px 12px; color: rgba(255,255,255,0.9); font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
   .pulse-dot { width: 6px; height: 6px; background: ${C.soft}; border-radius: 50%; animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.3)} }
-  .notif-btn { width: 34px; height: 34px; border-radius: 50%; background: ${C.dark}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; }
-  .notif-pip { position: absolute; top: 5px; right: 6px; width: 8px; height: 8px; background: ${C.warning}; border-radius: 50%; border: 2px solid ${C.primary}; }
+
+  /* ── Notification button — fixed ── */
+  .notif-wrap { position: relative; display: flex; align-items: center; }
+  .notif-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: ${C.dark};
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: visible;
+    padding: 0;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .notif-btn:hover { background: rgba(255,255,255,0.2); }
+  .notif-btn svg { display: block; flex-shrink: 0; }
+  .notif-pip {
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 8px; height: 8px;
+    background: ${C.warning};
+    border-radius: 50%;
+    border: 2px solid ${C.primary};
+    pointer-events: none;
+    animation: pipPulse 2s infinite;
+  }
+  @keyframes pipPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
 
   .page { padding: 28px; min-height: calc(100vh - 60px); }
   .page-hdr { margin-bottom: 22px; }
@@ -182,129 +211,58 @@ const css = `
   .fu2 { animation-delay: 0.12s; }
 
   /* ── Org Preview Modal ── */
-  .opm-overlay {
-    position: fixed; inset: 0;
-    background: rgba(10,20,14,0.55);
-    backdrop-filter: blur(3px);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 300;
-    animation: opmFadeIn 0.18s ease both;
-  }
+  .opm-overlay { position: fixed; inset: 0; background: rgba(10,20,14,0.55); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; z-index: 300; animation: opmFadeIn 0.18s ease both; }
   @keyframes opmFadeIn { from{opacity:0} to{opacity:1} }
-  .opm-box {
-    background: ${C.card};
-    border-radius: 18px;
-    width: 480px;
-    max-width: 94vw;
-    max-height: 88vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 24px 64px rgba(0,0,0,0.22), 0 4px 16px rgba(0,0,0,0.1);
-    animation: opmSlideUp 0.22s cubic-bezier(.22,.9,.36,1) both;
-  }
-  @keyframes opmSlideUp {
-    from { opacity: 0; transform: translateY(18px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  .opm-hero {
-    background: ${C.primary};
-    padding: 24px 24px 0;
-    position: relative;
-    flex-shrink: 0;
-  }
-  .opm-close {
-    position: absolute; top: 14px; right: 14px;
-    width: 28px; height: 28px; border-radius: 50%;
-    background: rgba(255,255,255,0.18);
-    border: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    color: #fff; font-size: 14px; line-height: 1;
-    transition: background 0.13s;
-  }
+  .opm-box { background: ${C.card}; border-radius: 18px; width: 480px; max-width: 94vw; max-height: 88vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 24px 64px rgba(0,0,0,0.22), 0 4px 16px rgba(0,0,0,0.1); animation: opmSlideUp 0.22s cubic-bezier(.22,.9,.36,1) both; }
+  @keyframes opmSlideUp { from{opacity:0;transform:translateY(18px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+  .opm-hero { background: ${C.primary}; padding: 24px 24px 0; position: relative; flex-shrink: 0; }
+  .opm-close { position: absolute; top: 14px; right: 14px; width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.18); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; line-height: 1; transition: background 0.13s; }
   .opm-close:hover { background: rgba(255,255,255,0.3); }
-  .opm-av {
-    width: 68px; height: 68px; border-radius: 16px;
-    background: rgba(255,255,255,0.22);
-    border: 2px solid rgba(255,255,255,0.45);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 26px; font-weight: 700; color: #fff;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: -1px;
-    margin-bottom: 12px;
-    box-shadow: 0 0 0 5px rgba(255,255,255,0.07);
-  }
+  .opm-av { width: 68px; height: 68px; border-radius: 16px; background: rgba(255,255,255,0.22); border: 2px solid rgba(255,255,255,0.45); display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; color: #fff; font-family: 'DM Mono', monospace; letter-spacing: -1px; margin-bottom: 12px; box-shadow: 0 0 0 5px rgba(255,255,255,0.07); }
   .opm-name { color: #fff; font-size: 20px; font-weight: 700; letter-spacing: -0.4px; margin-bottom: 4px; }
   .opm-meta { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
   .opm-meta-item { display: flex; align-items: center; gap: 5px; color: rgba(255,255,255,0.78); font-size: 12px; }
-  .opm-type-strip {
-    display: flex; gap: 8px;
-    border-top: 1px solid rgba(255,255,255,0.15);
-    margin: 0 -24px; padding: 12px 24px;
-  }
-  .opm-body {
-    padding: 20px 24px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-  }
-  .opm-section-title {
-    font-size: 10.5px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.7px; color: ${C.muted}; margin-bottom: 10px;
-  }
-  .opm-desc {
-    font-size: 13px; color: ${C.darkText}; line-height: 1.6;
-    background: ${C.bgLight}; border-radius: 10px;
-    padding: 12px 14px; border: 1px solid ${C.border};
-  }
+  .opm-type-strip { display: flex; gap: 8px; border-top: 1px solid rgba(255,255,255,0.15); margin: 0 -24px; padding: 12px 24px; }
+  .opm-body { padding: 20px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
+  .opm-section-title { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: ${C.muted}; margin-bottom: 10px; }
+  .opm-desc { font-size: 13px; color: ${C.darkText}; line-height: 1.6; background: ${C.bgLight}; border-radius: 10px; padding: 12px 14px; border: 1px solid ${C.border}; }
   .opm-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .opm-f-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: ${C.muted}; margin-bottom: 3px; }
   .opm-f-val { font-size: 13px; font-weight: 500; color: ${C.darkText}; }
   .opm-f-email { font-size: 12.5px; font-weight: 500; color: ${C.primary}; }
-  .opm-f-mono  { font-family: 'DM Mono', monospace; font-size: 11px; color: ${C.muted}; word-break: break-all; }
-  .opm-notice {
-    display: flex; align-items: flex-start; gap: 10px;
-    background: ${C.warnBg};
-    border: 1px solid rgba(245,158,11,0.25);
-    border-radius: 10px; padding: 11px 13px;
-    font-size: 12px; color: #92400e; line-height: 1.5;
-  }
-  .opm-footer {
-    padding: 16px 24px;
-    border-top: 1px solid ${C.border};
-    display: flex; gap: 10px;
-    flex-shrink: 0;
-    background: ${C.pageBg};
-  }
-  .opm-btn-cancel {
-    flex: 0 0 auto;
-    background: transparent; color: ${C.muted};
-    border: 1px solid ${C.border}; border-radius: 10px;
-    padding: 10px 18px; font-size: 13px; font-weight: 500;
-    cursor: pointer; font-family: 'DM Sans', sans-serif;
-    transition: border-color 0.13s, color 0.13s;
-  }
+  .opm-f-mono { font-family: 'DM Mono', monospace; font-size: 11px; color: ${C.muted}; word-break: break-all; }
+  .opm-notice { display: flex; align-items: flex-start; gap: 10px; background: ${C.warnBg}; border: 1px solid rgba(245,158,11,0.25); border-radius: 10px; padding: 11px 13px; font-size: 12px; color: #92400e; line-height: 1.5; }
+  .opm-footer { padding: 16px 24px; border-top: 1px solid ${C.border}; display: flex; gap: 10px; flex-shrink: 0; background: ${C.pageBg}; }
+  .opm-btn-cancel { flex: 0 0 auto; background: transparent; color: ${C.muted}; border: 1px solid ${C.border}; border-radius: 10px; padding: 10px 18px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: border-color 0.13s, color 0.13s; }
   .opm-btn-cancel:hover { border-color: ${C.muted}; color: ${C.darkText}; }
-  .opm-btn-connect {
-    flex: 1;
-    background: ${C.primary}; color: #fff;
-    border: none; border-radius: 10px;
-    padding: 11px 20px; font-size: 13.5px; font-weight: 600;
-    cursor: pointer; font-family: 'DM Sans', sans-serif;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    transition: background 0.15s;
-  }
+  .opm-btn-connect { flex: 1; background: ${C.primary}; color: #fff; border: none; border-radius: 10px; padding: 11px 20px; font-size: 13.5px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s; }
   .opm-btn-connect:hover { background: ${C.dark}; }
   .opm-b-white { background: rgba(255,255,255,0.18); color: #fff; border: 1px solid rgba(255,255,255,0.32); }
   .opm-bdot-w  { background: #fff; }
 `;
 
+// ── Bell icon rendered inline (not via Ico component) so it's guaranteed to show ──
+const BellIcon = () => (
+  <svg
+    width="17"
+    height="17"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="#ffffff"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ display: "block", flexShrink: 0 }}
+  >
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+  </svg>
+);
+
 const Ico = ({ n, s = 16, c = C.primary }) => {
   const d = {
     network:  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="13" x2="5" y2="16"/><line x1="12" y1="13" x2="19" y2="16"/></svg>,
     search:   <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
-    bell:     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>,
     qr:       <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3" rx="0.5"/><rect x="18" y="14" width="3" height="3" rx="0.5"/><rect x="14" y="18" width="3" height="3" rx="0.5"/><rect x="18" y="18" width="3" height="3" rx="0.5"/></svg>,
     partners: <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>,
     clock:    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
@@ -337,35 +295,19 @@ function OrgPreviewModal({ org, onClose, onConnect }) {
   return (
     <div className="opm-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="opm-box" onClick={e => e.stopPropagation()}>
-
         <div className="opm-hero">
           <button className="opm-close" onClick={onClose}>✕</button>
           <div className="opm-av">{initials(org.name)}</div>
           <div className="opm-name">{org.name}</div>
           <div className="opm-meta">
-            {org.industry && (
-              <div className="opm-meta-item">
-                <Ico n="industry" s={13} c="rgba(255,255,255,0.65)"/>{org.industry}
-              </div>
-            )}
-            {location && (
-              <div className="opm-meta-item">
-                <Ico n="location" s={13} c="rgba(255,255,255,0.65)"/>{location}
-              </div>
-            )}
-            {org.contactEmail && (
-              <div className="opm-meta-item">
-                <Ico n="email" s={13} c="rgba(255,255,255,0.65)"/>{org.contactEmail}
-              </div>
-            )}
+            {org.industry && <div className="opm-meta-item"><Ico n="industry" s={13} c="rgba(255,255,255,0.65)"/>{org.industry}</div>}
+            {location    && <div className="opm-meta-item"><Ico n="location" s={13} c="rgba(255,255,255,0.65)"/>{location}</div>}
+            {org.adminEmail && <div className="opm-meta-item"><Ico n="email" s={13} c="rgba(255,255,255,0.65)"/>{org.adminEmail}</div>}
           </div>
           <div className="opm-type-strip">
-            <span className="badge opm-b-white">
-              <span className="bdot opm-bdot-w"/>{org.type}
-            </span>
+            <span className="badge opm-b-white"><span className="bdot opm-bdot-w"/>{org.type}</span>
           </div>
         </div>
-
         <div className="opm-body">
           {org.description && (
             <div>
@@ -373,52 +315,30 @@ function OrgPreviewModal({ org, onClose, onConnect }) {
               <div className="opm-desc">{org.description}</div>
             </div>
           )}
-
           <div>
             <div className="opm-section-title">Public Details</div>
             <div className="opm-fields">
-              <div>
-                <div className="opm-f-lbl">Industry</div>
-                <div className="opm-f-val">{org.industry || "—"}</div>
-              </div>
-              <div>
-                <div className="opm-f-lbl">Type</div>
-                <div className="opm-f-val" style={{ textTransform: "capitalize" }}>{org.type || "—"}</div>
-              </div>
-              {org.city && (
-                <div>
-                  <div className="opm-f-lbl">City</div>
-                  <div className="opm-f-val">{org.city}</div>
-                </div>
-              )}
-              {org.country && (
-                <div>
-                  <div className="opm-f-lbl">Country</div>
-                  <div className="opm-f-val">{org.country}</div>
-                </div>
-              )}
-              {org.contactEmail && (
-                <div style={{ gridColumn: "1 / -1" }}>
+              <div><div className="opm-f-lbl">Industry</div><div className="opm-f-val">{org.industry || "—"}</div></div>
+              <div><div className="opm-f-lbl">Type</div><div className="opm-f-val" style={{ textTransform:"capitalize" }}>{org.type || "—"}</div></div>
+              {org.city    && <div><div className="opm-f-lbl">City</div><div className="opm-f-val">{org.city}</div></div>}
+              {org.country && <div><div className="opm-f-lbl">Country</div><div className="opm-f-val">{org.country}</div></div>}
+              {org.adminEmail && (
+                <div style={{ gridColumn:"1 / -1" }}>
                   <div className="opm-f-lbl">Contact Email</div>
-                  <div className="opm-f-email">{org.contactEmail}</div>
+                  <div className="opm-f-email">{org.adminEmail}</div>
                 </div>
               )}
-              <div style={{ gridColumn: "1 / -1" }}>
+              <div style={{ gridColumn:"1 / -1" }}>
                 <div className="opm-f-lbl">Organization ID</div>
                 <div className="opm-f-mono">{org.id}</div>
               </div>
             </div>
           </div>
-
           <div className="opm-notice">
             <Ico n="warn" s={14} c="#92400e"/>
-            <span>
-              Full compliance documents, verification history, and activity data
-              become visible only after a connection is established.
-            </span>
+            <span>Full compliance documents, verification history, and activity data become visible only after a connection is established.</span>
           </div>
         </div>
-
         <div className="opm-footer">
           <button className="opm-btn-cancel" onClick={onClose}>Close</button>
           <button className="opm-btn-connect" onClick={() => onConnect(org)}>
@@ -426,33 +346,32 @@ function OrgPreviewModal({ org, onClose, onConnect }) {
             Connect with {org.name.split(" ")[0]}
           </button>
         </div>
-
       </div>
     </div>
   );
 }
-// ─────────────────────────────────────────────────────────────────────────────
 
+// ─────────────────────────────────────────────────────────────────────────────
 export default function B2BNetwork() {
   const [connections, setConnections] = useState([]);
   const [listLoading, setListLoading] = useState(true);
-  const [listSearch, setListSearch]   = useState("");
-  const [listFilter, setListFilter]   = useState("All");
+  const [listSearch,  setListSearch]  = useState("");
+  const [listFilter,  setListFilter]  = useState("All");
   const [stats, setStats] = useState({ connected: 0, pending: 0, total: 0 });
 
-  const [orgQuery, setOrgQuery]         = useState("");
-  const [ddResults, setDdResults]       = useState([]);
-  const [ddOpen, setDdOpen]             = useState(false);
-  const [ddLoading, setDdLoading]       = useState(false);
-  const [selectedOrg, setSelectedOrg]   = useState(null);
-  const [message, setMessage]           = useState("");
-  const [sending, setSending]           = useState(false);
+  const [orgQuery,     setOrgQuery]     = useState("");
+  const [ddResults,    setDdResults]    = useState([]);
+  const [ddOpen,       setDdOpen]       = useState(false);
+  const [ddLoading,    setDdLoading]    = useState(false);
+  const [selectedOrg,  setSelectedOrg]  = useState(null);
+  const [message,      setMessage]      = useState("");
+  const [sending,      setSending]      = useState(false);
 
-  const [previewOrg, setPreviewOrg]           = useState(null);
-  const [toast, setToast]                     = useState(null);
-  const [selectedPartner, setSelectedPartner] = useState(null);
+  const [previewOrg,       setPreviewOrg]       = useState(null);
+  const [toast,            setToast]            = useState(null);
+  const [selectedPartner,  setSelectedPartner]  = useState(null);
 
-  const ddRef   = useRef(null);
+  const ddRef  = useRef(null);
   const MAX_MSG = 160;
 
   const showToast = (msg, type = "ok") => {
@@ -511,9 +430,7 @@ export default function B2BNetwork() {
         targetOrgId: selectedOrg.id,
         notes: message || undefined,
       });
-      setSelectedOrg(null);
-      setOrgQuery("");
-      setMessage("");
+      setSelectedOrg(null); setOrgQuery(""); setMessage("");
       showToast(`Connection request sent to ${selectedOrg.name}`);
       await loadData();
     } catch (err) {
@@ -549,9 +466,9 @@ export default function B2BNetwork() {
 
   const filtered = connected.filter(c => {
     const q    = listSearch.toLowerCase();
-    const name = (c.partner?.name || "").toLowerCase();
+    const name = (c.partner?.name     || "").toLowerCase();
     const ind  = (c.partner?.industry || "").toLowerCase();
-    const type = c.partner?.type || "";
+    const type =  c.partner?.type     || "";
     return (name.includes(q) || ind.includes(q)) &&
            (listFilter === "All" || type.toLowerCase() === listFilter.toLowerCase());
   });
@@ -581,10 +498,14 @@ export default function B2BNetwork() {
         </div>
         <div className="topnav-right">
           <div className="topnav-site"><span className="pulse-dot"/>Live</div>
-          <button className="notif-btn">
-            <Ico n="bell" s={15} c="rgba(255,255,255,0.85)"/>
-            {received.length > 0 && <span className="notif-pip"/>}
-          </button>
+
+          {/* ── Notification bell — fixed ── */}
+          <div className="notif-wrap">
+            <button className="notif-btn" aria-label="Notifications">
+              <BellIcon />
+              {received.length > 0 && <span className="notif-pip"/>}
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -597,10 +518,10 @@ export default function B2BNetwork() {
 
         <div className="stat-strip fu fu1">
           {[
-            { ico: "partners", icoCls: "",     val: stats.connected,               lbl: "Connected partners" },
-            { ico: "clock",    icoCls: "warn",  val: stats.pending,                 lbl: "Pending requests" },
-            { ico: "globe",    icoCls: "",       val: connections.filter(c => c.status === "connected" && c.partner?.type === "provider").length, lbl: "Service providers" },
-            { ico: "check",    icoCls: "",       val: stats.total,                   lbl: "Total connections" },
+            { ico:"partners", icoCls:"",     val: stats.connected, lbl:"Connected partners" },
+            { ico:"clock",    icoCls:"warn",  val: stats.pending,   lbl:"Pending requests" },
+            { ico:"globe",    icoCls:"",      val: connections.filter(c => c.status === "connected" && c.partner?.type === "provider").length, lbl:"Service providers" },
+            { ico:"check",    icoCls:"",      val: stats.total,     lbl:"Total connections" },
           ].map((s, i) => (
             <div className="stat-card" key={i}>
               <div className={`stat-ico ${s.icoCls}`}>
@@ -615,6 +536,7 @@ export default function B2BNetwork() {
         </div>
 
         <div className="split fu fu2">
+          {/* ── Left: Connected Partners ── */}
           <div className="panel">
             <div className="panel-head">
               <div>
@@ -630,7 +552,7 @@ export default function B2BNetwork() {
                 <input placeholder="Search by name or industry…" value={listSearch} onChange={e => setListSearch(e.target.value)}/>
               </div>
               <div className="fpill-wrap">
-                {["All", "Provider", "Client"].map(f => (
+                {["All","Provider","Client"].map(f => (
                   <button key={f} className={`fpill ${listFilter === f ? "active" : ""}`} onClick={() => setListFilter(f)}>{f}</button>
                 ))}
               </div>
@@ -640,10 +562,10 @@ export default function B2BNetwork() {
               {listLoading ? (
                 [1,2,3].map(i => (
                   <div className="partner-row" key={i}>
-                    <div className="p-av skeleton" style={{background:"none"}}/>
-                    <div style={{flex:1,display:"flex",flexDirection:"column",gap:6}}>
-                      <div className="skeleton" style={{height:13,width:"55%"}}/>
-                      <div className="skeleton" style={{height:11,width:"35%"}}/>
+                    <div className="p-av skeleton" style={{ background:"none" }}/>
+                    <div style={{ flex:1, display:"flex", flexDirection:"column", gap:6 }}>
+                      <div className="skeleton" style={{ height:13, width:"55%" }}/>
+                      <div className="skeleton" style={{ height:11, width:"35%" }}/>
                     </div>
                   </div>
                 ))
@@ -656,7 +578,7 @@ export default function B2BNetwork() {
               ) : filtered.map(c => (
                 <div className="partner-row" key={c.id} onClick={() => setSelectedPartner(c.id)}>
                   <div className="p-av">{initials(c.partner?.name)}</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ flex:1, minWidth:0 }}>
                     <div className="p-name">{c.partner?.name}</div>
                     <div className="p-industry">{c.partner?.industry}</div>
                   </div>
@@ -669,7 +591,9 @@ export default function B2BNetwork() {
             </div>
           </div>
 
+          {/* ── Right column ── */}
           <div className="right-col">
+            {/* Connect card */}
             <div className="connect-card">
               <div className="cc-head">
                 <div className="cc-head-ico"><Ico n="network" s={15} c="#fff"/></div>
@@ -678,9 +602,8 @@ export default function B2BNetwork() {
                   <div className="cc-head-s">Search by organization name</div>
                 </div>
               </div>
-
               <div className="cc-body">
-                <div style={{ marginBottom: 14 }}>
+                <div style={{ marginBottom:14 }}>
                   <div className="field-lbl">Organization name</div>
                   <div className="org-search-wrap" ref={ddRef}>
                     <div className={`org-input-row ${ddOpen ? "focused" : ""}`}>
@@ -694,10 +617,10 @@ export default function B2BNetwork() {
                       {orgQuery && (
                         <button
                           onClick={() => { setOrgQuery(""); setDdOpen(false); setSelectedOrg(null); }}
-                          style={{background:"none",border:"none",cursor:"pointer",color:C.muted,fontSize:14,lineHeight:1,padding:"0 2px"}}>✕</button>
+                          style={{ background:"none", border:"none", cursor:"pointer", color:C.muted, fontSize:14, lineHeight:1, padding:"0 2px" }}
+                        >✕</button>
                       )}
                     </div>
-
                     {ddOpen && (
                       <div className="org-dropdown">
                         {ddLoading ? (
@@ -711,27 +634,22 @@ export default function B2BNetwork() {
                           <div
                             className="org-dd-item"
                             key={org.id}
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              setDdOpen(false);
-                              setPreviewOrg(org);
-                            }}
+                            onMouseDown={e => { e.preventDefault(); setDdOpen(false); setPreviewOrg(org); }}
                           >
                             <div className="org-dd-av">{initials(org.name)}</div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ flex:1, minWidth:0 }}>
                               <div className="org-dd-name">{org.name}</div>
                               <div className="org-dd-ind">{org.industry}</div>
                             </div>
-                            <div className="org-dd-badge" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <div className="org-dd-badge" style={{ display:"flex", alignItems:"center", gap:6 }}>
                               <span className={`badge ${org.type === "client" ? "b-client" : "b-provider"}`}>{org.type}</span>
-                              <span style={{ fontSize: 10, color: C.muted, whiteSpace: "nowrap" }}>View →</span>
+                              <span style={{ fontSize:10, color:C.muted, whiteSpace:"nowrap" }}>View →</span>
                             </div>
                           </div>
                         ))}
                       </div>
                     )}
                   </div>
-
                   {selectedOrg && (
                     <div className="selected-org">
                       <div className="selected-av">{initials(selectedOrg.name)}</div>
@@ -744,8 +662,10 @@ export default function B2BNetwork() {
                   )}
                 </div>
 
-                <div style={{ marginBottom: 16 }}>
-                  <div className="field-lbl">Message <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,fontSize:11}}>(optional)</span></div>
+                <div style={{ marginBottom:16 }}>
+                  <div className="field-lbl">
+                    Message <span style={{ fontWeight:400, textTransform:"none", letterSpacing:0, fontSize:11 }}>(optional)</span>
+                  </div>
                   <textarea
                     className="msg-area"
                     rows={3}
@@ -763,6 +683,7 @@ export default function B2BNetwork() {
               </div>
             </div>
 
+            {/* Received requests */}
             <div className="recv-card">
               <div className="recv-head">
                 <div className="recv-head-t">
@@ -772,7 +693,7 @@ export default function B2BNetwork() {
                 </div>
               </div>
               {received.length === 0 ? (
-                <div className="empty" style={{padding:"20px 16px"}}>
+                <div className="empty" style={{ padding:"20px 16px" }}>
                   <div className="empty-ico"><Ico n="inbox" s={20} c={C.primary}/></div>
                   <div className="empty-t">No incoming requests</div>
                   <div className="empty-s">Requests from other organizations appear here</div>
@@ -780,17 +701,15 @@ export default function B2BNetwork() {
               ) : received.map(r => (
                 <div className="recv-row" key={r.id}>
                   <div className="recv-av">{initials(r.partner?.name)}</div>
-                  <div style={{flex:1,minWidth:0}}>
+                  <div style={{ flex:1, minWidth:0 }}>
                     <div className="recv-name">{r.partner?.name}</div>
                     <div className="recv-ind">{r.partner?.industry}</div>
                     {r.notes && <div className="recv-msg">"{r.notes}"</div>}
                   </div>
                   <div className="recv-actions">
                     <span className="recv-time">{fmtSince(r.createdAt)}</span>
-                    <span className={`badge ${r.partner?.type === "provider" ? "b-provider" : "b-client"}`}>
-                      {r.partner?.type}
-                    </span>
-                    <div style={{display:"flex",gap:5}}>
+                    <span className={`badge ${r.partner?.type === "provider" ? "b-provider" : "b-client"}`}>{r.partner?.type}</span>
+                    <div style={{ display:"flex", gap:5 }}>
                       <button className="btn-accept" onClick={() => handleAccept(r.id, r.partner?.name)}>Accept</button>
                       <button className="btn-decline" onClick={() => handleRemove(r.id, r.partner?.name)}>✕</button>
                     </div>
@@ -799,6 +718,7 @@ export default function B2BNetwork() {
               ))}
             </div>
 
+            {/* Sent/pending requests */}
             <div className="pending-card">
               <div className="pend-head">
                 <div className="pend-head-t">
@@ -808,7 +728,7 @@ export default function B2BNetwork() {
                 </div>
               </div>
               {pending.length === 0 ? (
-                <div className="empty" style={{padding:"20px 16px"}}>
+                <div className="empty" style={{ padding:"20px 16px" }}>
                   <div className="empty-ico"><Ico n="send" s={20} c={C.primary}/></div>
                   <div className="empty-t">No sent requests</div>
                   <div className="empty-s">Requests you send will appear here</div>
@@ -816,13 +736,13 @@ export default function B2BNetwork() {
               ) : pending.map(p => (
                 <div className="pend-row" key={p.id}>
                   <div className="pend-av">{initials(p.partner?.name)}</div>
-                  <div style={{flex:1,minWidth:0}}>
+                  <div style={{ flex:1, minWidth:0 }}>
                     <div className="pend-name">{p.partner?.name}</div>
                     <div className="pend-ind">{p.partner?.industry}</div>
                   </div>
                   <div className="pend-actions">
                     <span className="pend-sent">{fmtSince(p.createdAt)}</span>
-                    <div style={{display:"flex",gap:5}}>
+                    <div style={{ display:"flex", gap:5 }}>
                       <button className="btn-cancel" onClick={() => handleRemove(p.id, p.partner?.name)}>✕ Withdraw</button>
                     </div>
                   </div>
@@ -837,12 +757,12 @@ export default function B2BNetwork() {
         <OrgPreviewModal
           org={previewOrg}
           onClose={() => setPreviewOrg(null)}
-          onConnect={(org) => {
+          onConnect={org => {
             setSelectedOrg(org);
             setOrgQuery("");
             setPreviewOrg(null);
             setTimeout(() => {
-              document.querySelector(".cc-body")?.scrollIntoView({ behavior: "smooth", block: "center" });
+              document.querySelector(".cc-body")?.scrollIntoView({ behavior:"smooth", block:"center" });
             }, 100);
           }}
         />

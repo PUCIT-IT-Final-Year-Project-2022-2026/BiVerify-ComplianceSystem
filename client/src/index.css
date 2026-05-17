@@ -31,6 +31,31 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ── GLOBAL CUSTOM SCROLLBAR ── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #8fd6a3; /* Parrot green thumb */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2b9d4e;
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #8fd6a3 transparent;
+}
+
 h1 {
   font-size: 3.2em;
   line-height: 1.1;

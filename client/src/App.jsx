@@ -15,6 +15,7 @@ import B2BNetwork from "./pages/ClientSide/B2BNetwork.jsx";
 import ServiceBookings from "./pages/ClientSide/ServiceBookings.jsx";
 import ComplianceVault from "./pages/ClientSide/ComplianceVault.jsx";
 import ServiceRequest from "./pages/ClientSide/ServiceRequest.jsx";
+import PartnerProfile from "./pages/ClientSide/PartnerProfile.jsx";
 
 import ProviderDashboard from "./pages/ProviderSide/ServiceProviderDashboard.jsx";
 import ProviderB2BNetwork from "./pages/ProviderSide/ProviderB2BNetwork.jsx";
@@ -23,6 +24,7 @@ import ProviderB2BNetwork from "./pages/ProviderSide/ProviderB2BNetwork.jsx";
 import MyTeamClient from "./pages/ClientSide/MyTeam.jsx";
 import SystemAuditLogsClient from "./pages/ClientSide/SystemAuditLogs.jsx";
 import OrganizationSettingsClient from "./pages/ClientSide/OrganizationSettings.jsx";
+import ClientQR from "./pages/ClientSide/ClientQR.jsx";
 
 // Provider Pages
 import MyTeamProvider from "./pages/ProviderSide/MyTeam.jsx";
@@ -86,8 +88,14 @@ export default function App() {
         <Route path="/vault" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><ComplianceVault /></DashboardLayout></RequireAuth>} />
         <Route path="/team" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><MyTeamClient /></DashboardLayout></RequireAuth>} />
         <Route path="/audit" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><SystemAuditLogsClient /></DashboardLayout></RequireAuth>} />
+        <Route path="/clientqr" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><ClientQR /></DashboardLayout></RequireAuth>} />
         <Route path="/settings" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><OrganizationSettingsClient /></DashboardLayout></RequireAuth>} />
         <Route path="/new-request" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><ServiceRequest /></DashboardLayout></RequireAuth>} />
+        <Route path="/partner"
+  element={<RequireAuth roles={["org_admin"]}>
+    <DashboardLayout><PartnerProfile /></DashboardLayout>
+  </RequireAuth>}
+/>
 
         {/* ── Provider Org Admin Routes ── */}
         <Route path="/provider/overview" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><ServiceProviderDashboard /></DashboardLayout></RequireAuth>} />

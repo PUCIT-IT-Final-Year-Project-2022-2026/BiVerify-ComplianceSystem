@@ -30,6 +30,12 @@ export const auth = {
   login: (email, password) =>
     api.post("/api/auth/login", { email, password }).then((r) => r.data),
   me: () => api.get("/api/auth/me").then((r) => r.data),
+  forgotPassword: (email) =>
+    api.post("/api/auth/forgot-password", { email }).then((r) => r.data),
+  verifyOtp: (email, otp) =>
+    api.post("/api/auth/verify-otp", { email, otp }).then((r) => r.data),
+  resetPassword: (resetKey, password) =>
+    api.post("/api/auth/reset-password", { resetKey, password }).then((r) => r.data),
 };
 
 export const scan = {
@@ -59,6 +65,19 @@ export const bookings = {
     api
       .get(`/api/bookings/${requestId}/qr.png`, { responseType: "blob" })
       .then((r) => r.data),
+};
+
+export const locations = {
+  list: () => api.get("/api/locations").then((r) => r.data),
+  create: (label, address) =>
+    api.post("/api/locations", { label, address }).then((r) => r.data),
+};
+
+export const compliance = {
+  getStats: () => api.get("/api/compliance/stats").then((r) => r.data),
+  listVerifications: () =>
+    api.get("/api/compliance/verifications").then((r) => r.data),
+  listOrders: () => api.get("/api/compliance/orders").then((r) => r.data),
 };
 
 // ── B2B ──────────────────────────────────────────────────────────────────────
@@ -91,6 +110,8 @@ export const b2b = {
 export const clientDashboard = {
   stats: () =>
     api.get("/api/client/dashboard/stats").then((r) => r.data),
+  me: () =>
+    api.get("/api/client/dashboard/me").then((r) => r.data),
   scanChart: (period = "year") =>
     api.get("/api/client/dashboard/scan-chart", { params: { period } }).then((r) => r.data),
   providerRanking: (limit = 7) =>
@@ -109,93 +130,31 @@ export const complianceVault = {
 };
 
 // ── PROVIDER COMPLIANCE DOCUMENTS ────────────────────────────────────────────
-// Used by ComplianceDocuments.jsx (ProviderSide)
 
 export const providerCompliance = {
-  /**
-   * 4 KPI stat counters for the provider's own compliance docs.
-   * @returns {Promise<{ total, approved, pending, reviewing, rejected }>}
-   */
   stats: () =>
     api.get("/api/provider/compliance/stats").then((r) => r.data),
-
-  /**
-   * List the provider's own compliance documents.
-   * @param {Object} params  { search?, status?, limit?, skip? }
-   * @returns {Promise<{ documents: Array, total: number }>}
-   */
   list: (params = {}) =>
     api.get("/api/provider/compliance/documents", { params }).then((r) => r.data),
-
-  /**
-   * Get a single document's full details.
-   * @param {string} id
-   * @returns {Promise<{ document: Object }>}
-   */
   get: (id) =>
     api.get(`/api/provider/compliance/documents/${id}`).then((r) => r.data),
-
-  /**
-   * Upload / create a new compliance document record.
-   * @param {Object} payload  { label, type, fileName, fileUrl, fileSize, expiryDate? }
-   * @returns {Promise<{ document: Object }>}
-   */
   create: (payload) =>
     api.post("/api/provider/compliance/documents", payload).then((r) => r.data),
-
-  /**
-   * Update a document (re-upload or edit metadata).
-   * @param {string} id
-   * @param {Object} payload  { label?, type?, fileName?, fileUrl?, fileSize?, expiryDate? }
-   * @returns {Promise<{ document: Object }>}
-   */
   update: (id, payload) =>
     api.patch(`/api/provider/compliance/documents/${id}`, payload).then((r) => r.data),
-
-  /**
-   * Delete a compliance document.
-   * @param {string} id
-   * @returns {Promise<{ deleted: true, id: string }>}
-   */
   remove: (id) =>
     api.delete(`/api/provider/compliance/documents/${id}`).then((r) => r.data),
-
-  /**
-   * Get download URL for a document file.
-   * @param {string} id
-   * @returns {Promise<{ url: string, fileName: string }>}
-   */
   downloadUrl: (id) =>
     api.get(`/api/provider/compliance/documents/${id}/download`).then((r) => r.data),
 };
 
 // ── CLIENT SETTINGS ───────────────────────────────────────────────────────────
-// Used by OrganizationSettings.jsx (ClientSide)
 
 export const clientSettings = {
-  /**
-   * Load org profile + localization settings for the settings form.
-   * @returns {Promise<{ profile: Object }>}
-   */
   getProfile: () =>
     api.get("/api/client/settings/profile").then((r) => r.data),
-
-  /**
-   * Save changes from the settings form.
-   * @param {Object} payload  { orgName?, email?, websiteUrl?, address?,
-   *                            city?, country?, industry?, regNumber?,
-   *                            timezone?, currency? }
-   * @returns {Promise<{ message: string, profile: Object }>}
-   */
   updateProfile: (payload) =>
     api.patch("/api/client/settings/profile", payload).then((r) => r.data),
-
-  /**
-   * Change the logged-in user's password.
-   * @param {string} currentPassword
-   * @param {string} newPassword
-   * @returns {Promise<{ message: string }>}
-   */
   changePassword: (currentPassword, newPassword) =>
     api.patch("/api/client/settings/password", { currentPassword, newPassword }).then((r) => r.data),
 };
@@ -220,6 +179,11 @@ export function logout() {
 export function apiErrorMessage(err) {
   return (
     err?.response?.data?.error?.message ||
+    err?.response?.data?.message ||
+    err?.response?.data?.detail ||
+    (err?.response?.status === 409
+      ? "This booking cannot be cancelled in its current status."
+      : null) ||
     err?.message ||
     "Something went wrong"
   );
