@@ -174,7 +174,8 @@ export const clientDashboard = {
    * @returns {Promise<{ activeProviders, complianceRate, qrScansToday, expiringDocs }>}
    */
   stats: () =>
-    api.get("/api/client/dashboard/stats").then((r) => r.data),
+    api.get("/api/client/dashboard/stats").then((r) => r.data), // ✓ correct — matches the backend blueprint prefix /api/client/dashboard/me
+me: () => api.get("/api/client/dashboard/me").then((r) => r.data),
 
   /**
    * Bar-chart data grouped by period.

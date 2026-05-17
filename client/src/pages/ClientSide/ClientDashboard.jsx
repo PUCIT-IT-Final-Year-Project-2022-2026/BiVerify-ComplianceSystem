@@ -15,7 +15,7 @@ const C = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  CSS  (unchanged from original)
+//  CSS
 // ─────────────────────────────────────────────────────────────────────────────
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
@@ -26,12 +26,13 @@ const css = `
   .topnav-left { display: flex; align-items: center; gap: 12px; }
   .topnav-right { display: flex; align-items: center; gap: 10px; }
   .topnav-sitebadge { background: #1f7a3b; border-radius: 20px; padding: 4px 12px; color: rgba(255,255,255,0.9); font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
-  .pulse-dot { width: 6px; height: 6px; background: #8fd6a3; border-radius: 50%; animation: pulse 2s infinite; }
+  .pulse-dot { width: 6px; height: 6px; background: #8fd6a3; border-radius: 50%; animation: pulse 2s infinite; flex-shrink: 0; }
   @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.3)} }
-  .notif-btn { width: 34px; height: 34px; border-radius: 50%; background: #1f7a3b; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; }
-  .notif-pip { position: absolute; top: 5px; right: 6px; width: 8px; height: 8px; background: #F59E0B; border-radius: 50%; border: 2px solid #2b9d4e; }
-  .topnav-avatar { width: 34px; height: 34px; border-radius: 50%; background: #1f7a3b; border: 2px solid rgba(255,255,255,0.35); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; }
-  .topnav-name { color: #fff; font-size: 13px; font-weight: 500; }
+  .notif-btn { width: 34px; height: 34px; border-radius: 50%; background: #1f7a3b; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; overflow: visible; flex-shrink: 0; }
+  .notif-btn svg { display: block; flex-shrink: 0; }
+  .notif-pip { position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; background: #F59E0B; border-radius: 50%; border: 2px solid #2b9d4e; pointer-events: none; }
+  .topnav-avatar { width: 34px; height: 34px; border-radius: 50%; background: #1f7a3b; border: 2px solid rgba(255,255,255,0.35); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; flex-shrink: 0; letter-spacing: 0.5px; }
+  .topnav-name { color: #fff; font-size: 13px; font-weight: 500; white-space: nowrap; }
   .main { padding: 24px 28px; min-height: calc(100vh - 60px); margin-top: 60px; background: #F5F6FA; width: 100%; box-sizing: border-box; }
   .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; width: 100%; }
   @media(max-width:900px){ .kpi-row{ grid-template-columns: 1fr 1fr; } }
@@ -94,34 +95,75 @@ const css = `
   @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
   .fu { animation: fadeUp 0.3s ease forwards; opacity: 0; }
   .fu-1 { animation-delay: 0.04s; } .fu-2 { animation-delay: 0.1s; } .fu-3 { animation-delay: 0.16s; }
+  .nav-skeleton { width: 80px; height: 14px; border-radius: 4px; background: rgba(255,255,255,0.2); animation: navShimmer 1.4s infinite; }
+  .nav-skeleton-sm { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.2); animation: navShimmer 1.4s infinite; }
+  @keyframes navShimmer { 0%,100%{opacity:0.5} 50%{opacity:1} }
 `;
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  ICONS  (unchanged from original)
+//  ICONS
 // ─────────────────────────────────────────────────────────────────────────────
 const Ico = ({ n, s = 16, c = C.primary }) => {
   const d = {
-    qr:        <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3" rx="0.5"/><rect x="18" y="14" width="3" height="3" rx="0.5"/><rect x="14" y="18" width="3" height="3" rx="0.5"/><rect x="18" y="18" width="3" height="3" rx="0.5"/></svg>,
-    providers: <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>,
-    doc:       <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>,
-    alert:     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
-    bell:      <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>,
-    home:      <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>,
+    qr: (
+      <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1"/>
+        <rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/>
+        <rect x="14" y="14" width="3" height="3" rx="0.5"/>
+        <rect x="18" y="14" width="3" height="3" rx="0.5"/>
+        <rect x="14" y="18" width="3" height="3" rx="0.5"/>
+        <rect x="18" y="18" width="3" height="3" rx="0.5"/>
+      </svg>
+    ),
+    providers: (
+      <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+      </svg>
+    ),
+    doc: (
+      <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <polyline points="14,2 14,8 20,8"/>
+      </svg>
+    ),
+    alert: (
+      <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    ),
+    // FIX: Bell icon rewritten with explicit viewBox and clean paths that render reliably
+    bell: (
+      <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}>
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+    ),
+    home: (
+      <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        <polyline points="9,22 9,12 15,12 15,22"/>
+      </svg>
+    ),
   };
   return d[n] || null;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  SKELETON  — shown while loading
+//  SKELETON — shown while loading
 // ─────────────────────────────────────────────────────────────────────────────
 const KpiSkeleton = () => (
   <div className="kpi-row fu fu-1">
-    {[0,1,2,3].map(i => (
+    {[0, 1, 2, 3].map(i => (
       <div className="kpi-card" key={i}>
         <div className="kpi-card-accent"/>
         <div className="skeleton" style={{ height: 10, width: "60%", marginBottom: 10 }}/>
         <div className="skeleton" style={{ height: 28, width: "40%", marginBottom: 8 }}/>
-        <div className="skeleton" style={{ height: 8,  width: "80%" }}/>
+        <div className="skeleton" style={{ height: 8, width: "80%" }}/>
       </div>
     ))}
   </div>
@@ -232,11 +274,15 @@ export default function ClientDashboard() {
   // ── period filter for the chart
   const [filterBtn, setFilterBtn] = useState("year");
 
+  // ── Navbar data (replaces static hardcoded values)
+  const [navInfo,      setNavInfo]      = useState(null);
+  const [loadingNav,   setLoadingNav]   = useState(true);
+
   // ── API state
-  const [stats,     setStats]     = useState(null);
-  const [chartData, setChartData] = useState([]);   // groups array
-  const [rankings,  setRankings]  = useState([]);
-  const [scans,     setScans]     = useState([]);
+  const [stats,         setStats]        = useState(null);
+  const [chartData,     setChartData]    = useState([]);
+  const [rankings,      setRankings]     = useState([]);
+  const [scans,         setScans]        = useState([]);
 
   const [loadingStats,   setLoadingStats]   = useState(true);
   const [loadingChart,   setLoadingChart]   = useState(true);
@@ -245,6 +291,15 @@ export default function ClientDashboard() {
 
   const [errorStats,   setErrorStats]   = useState(null);
   const [errorScans,   setErrorScans]   = useState(null);
+
+  // ── fetch navbar data on mount
+  useEffect(() => {
+    setLoadingNav(true);
+    clientDashboard.me()
+      .then(data  => setNavInfo(data))
+      .catch(()   => setNavInfo({ orgName: "My Org", initials: "??", siteLabel: "HQ", userName: "" }))
+      .finally(() => setLoadingNav(false));
+  }, []);
 
   // ── fetch stats once on mount
   useEffect(() => {
@@ -298,43 +353,66 @@ export default function ClientDashboard() {
     <>
       <style>{css}</style>
 
-      {/* ── TOP NAV (unchanged) ── */}
+      {/* ── TOP NAV ── */}
       <nav className="topnav">
         <div className="topnav-left">
-          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-            <div style={{ width:36, height:36, background:"rgba(255,255,255,0.15)", borderRadius:9, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 36, height: 36, background: "rgba(255,255,255,0.15)", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <Ico n="home" s={16} c="#fff"/>
             </div>
-            <div style={{ display:"flex", flexDirection:"column", gap:2 }}>
-              <span style={{ color:"#fff", fontSize:15, fontWeight:700, letterSpacing:"-0.3px", lineHeight:1.2 }}>Dashboard</span>
-              <span style={{ color:"rgba(255,255,255,0.65)", fontSize:11 }}>
-                Overview · {new Date().toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <span style={{ color: "#fff", fontSize: 15, fontWeight: 700, letterSpacing: "-0.3px", lineHeight: 1.2 }}>
+                Dashboard
+              </span>
+              <span style={{ color: "rgba(255,255,255,0.65)", fontSize: 11 }}>
+                Overview · {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
               </span>
             </div>
           </div>
         </div>
+
         <div className="topnav-right">
+          {/* ── Site badge — dynamic from /me ── */}
           <div className="topnav-sitebadge">
             <span className="pulse-dot"/>
-            Site A – Lahore HQ
+            {loadingNav
+              ? <span className="nav-skeleton" style={{ width: 90, height: 12, borderRadius: 4 }}/>
+              : navInfo?.siteLabel ?? "HQ"
+            }
           </div>
+
+          {/* ── Notification bell — FIX: overflow:visible on button, explicit SVG display:block ── */}
           <button className="notif-btn" aria-label="Notifications">
-            <Ico n="bell" s={15} c="rgba(255,255,255,0.85)"/>
+            <Ico n="bell" s={16} c="rgba(255,255,255,0.9)"/>
             <span className="notif-pip"/>
           </button>
-          <div className="topnav-avatar">AC</div>
-          <span className="topnav-name">Acme Corp</span>
+
+          {/* ── Avatar — dynamic initials from /me ── */}
+          {loadingNav
+            ? <div className="nav-skeleton-sm"/>
+            : (
+              <div className="topnav-avatar" title={navInfo?.userName ?? ""}>
+                {navInfo?.initials ?? "??"}
+              </div>
+            )
+          }
+
+          {/* ── Org name — dynamic from /me ── */}
+          {loadingNav
+            ? <div className="nav-skeleton"/>
+            : <span className="topnav-name">{navInfo?.orgName ?? ""}</span>
+          }
         </div>
       </nav>
 
       {/* ── MAIN ── */}
-      <div className="main" style={{ width:"100%", minWidth:0, display:"block" }}>
+      <div className="main" style={{ width: "100%", minWidth: 0, display: "block" }}>
 
         {/* ── KPI CARDS ── */}
         {loadingStats ? (
           <KpiSkeleton/>
         ) : errorStats ? (
-          <div style={{ color: C.danger, fontSize:13, marginBottom:22 }}>{errorStats}</div>
+          <div style={{ color: C.danger, fontSize: 13, marginBottom: 22 }}>{errorStats}</div>
         ) : (
           <div className="kpi-row fu fu-1">
             {kpiCards.map((k, i) => (
@@ -349,7 +427,7 @@ export default function ClientDashboard() {
                 <div className="kpi-value">{k.value}</div>
                 <div className="kpi-meta">
                   <span className={k.up ? "kpi-up" : "kpi-dn"}>{k.trend}</span>
-                  <span style={{ color:C.muted }}>
+                  <span style={{ color: C.muted }}>
                     &nbsp;{k.up ? "vs last month" : k.accentClass === "danger" ? "action needed" : "vs last month"}
                   </span>
                 </div>
@@ -362,15 +440,17 @@ export default function ClientDashboard() {
 
         {/* ── CHART SECTION ── */}
         <div className="chart-section fu fu-2">
-          <div className="chart-header" style={{ display:"grid", gridTemplateColumns:"1fr 320px", gap:24, alignItems:"center" }}>
+          <div className="chart-header" style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 24, alignItems: "center" }}>
             <div><span className="chart-tab">QR Verifications</span></div>
             <div className="chart-filter">
-              {[["day","All day"],["week","All week"],["month","All month"],["year","All year"]].map(([f,l]) => (
+              {[["day", "All day"], ["week", "All week"], ["month", "All month"], ["year", "All year"]].map(([f, l]) => (
                 <button
                   key={f}
                   className={`filter-btn ${filterBtn === f ? "active" : ""}`}
                   onClick={() => setFilterBtn(f)}
-                >{l}</button>
+                >
+                  {l}
+                </button>
               ))}
             </div>
           </div>
@@ -383,42 +463,47 @@ export default function ClientDashboard() {
               </div>
 
               {loadingChart ? (
-                <div className="skeleton" style={{ height:160, borderRadius:8 }}/>
+                <div className="skeleton" style={{ height: 160, borderRadius: 8 }}/>
               ) : chartData.length === 0 ? (
-                <div style={{ height:160, display:"flex", alignItems:"center", justifyContent:"center", color:C.muted, fontSize:13 }}>
+                <div style={{ height: 160, display: "flex", alignItems: "center", justifyContent: "center", color: C.muted, fontSize: 13 }}>
                   No scan data for this period
                 </div>
               ) : (
                 <>
-                  <div style={{ display:"flex", gap:12, alignItems:"flex-end" }}>
+                  <div style={{ display: "flex", gap: 12, alignItems: "flex-end" }}>
                     {/* Y-axis labels */}
-                    <div style={{ display:"flex", flexDirection:"column", justifyContent:"space-between", height:160, paddingBottom:22 }}>
-                      {[maxScan, Math.round(maxScan*0.75), Math.round(maxScan*0.5), Math.round(maxScan*0.25), 0].map(v => (
-                        <span key={v} style={{ fontSize:10, color:C.muted, fontFamily:"DM Mono", lineHeight:1 }}>{v}</span>
+                    <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: 160, paddingBottom: 22 }}>
+                      {[maxScan, Math.round(maxScan * 0.75), Math.round(maxScan * 0.5), Math.round(maxScan * 0.25), 0].map(v => (
+                        <span key={v} style={{ fontSize: 10, color: C.muted, fontFamily: "DM Mono", lineHeight: 1 }}>{v}</span>
                       ))}
                     </div>
                     {/* Bars */}
-                    <div style={{ flex:1, position:"relative" }}>
-                      <div style={{ position:"absolute", inset:"0 0 22px 0", display:"flex", flexDirection:"column", justifyContent:"space-between", pointerEvents:"none" }}>
-                        {[0,1,2,3,4].map(i => <div key={i} style={{ borderTop:`1px solid ${C.border}`, width:"100%" }}/>)}
+                    <div style={{ flex: 1, position: "relative" }}>
+                      <div style={{ position: "absolute", inset: "0 0 22px 0", display: "flex", flexDirection: "column", justifyContent: "space-between", pointerEvents: "none" }}>
+                        {[0, 1, 2, 3, 4].map(i => <div key={i} style={{ borderTop: `1px solid ${C.border}`, width: "100%" }}/>)}
                       </div>
-                      <div style={{ display:"flex", gap:6, alignItems:"flex-end", height:160 }}>
+                      <div style={{ display: "flex", gap: 6, alignItems: "flex-end", height: 160 }}>
                         {chartData.map((g, gi) => (
-                          <div key={gi} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center" }}>
-                            <div style={{ display:"flex", gap:2, alignItems:"flex-end", width:"100%", height:138 }}>
+                          <div key={gi} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <div style={{ display: "flex", gap: 2, alignItems: "flex-end", width: "100%", height: 138 }}>
                               {[g.qrVerified, g.manual].map((h, bi) => (
-                                <div key={bi} style={{
-                                  height: `${(h / maxScan) * 138}px`, flex:1,
-                                  borderRadius:"3px 3px 0 0",
-                                  background: bi === 0 ? C.primary : C.soft,
-                                  cursor:"pointer", transition:"opacity 0.15s",
-                                }}
+                                <div
+                                  key={bi}
+                                  style={{
+                                    height: `${(h / maxScan) * 138}px`,
+                                    flex: 1,
+                                    borderRadius: "3px 3px 0 0",
+                                    background: bi === 0 ? C.primary : C.soft,
+                                    cursor: "pointer",
+                                    transition: "opacity 0.15s",
+                                    minHeight: h > 0 ? 2 : 0,
+                                  }}
                                   onMouseEnter={e => e.currentTarget.style.opacity = "0.7"}
                                   onMouseLeave={e => e.currentTarget.style.opacity = "1"}
                                 />
                               ))}
                             </div>
-                            <div style={{ fontSize:9.5, color:C.muted, fontFamily:"DM Mono", marginTop:5, textAlign:"center", whiteSpace:"nowrap" }}>
+                            <div style={{ fontSize: 9.5, color: C.muted, fontFamily: "DM Mono", marginTop: 5, textAlign: "center", whiteSpace: "nowrap" }}>
                               {g.label}
                             </div>
                           </div>
@@ -427,14 +512,14 @@ export default function ClientDashboard() {
                     </div>
                   </div>
                   {/* Legend */}
-                  <div style={{ display:"flex", gap:14, marginTop:10 }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-                      <div style={{ width:10, height:10, borderRadius:2, background:C.primary }}/>
-                      <span style={{ fontSize:11, color:C.muted }}>QR Verified</span>
+                  <div style={{ display: "flex", gap: 14, marginTop: 10 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <div style={{ width: 10, height: 10, borderRadius: 2, background: C.primary }}/>
+                      <span style={{ fontSize: 11, color: C.muted }}>QR Verified</span>
                     </div>
-                    <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-                      <div style={{ width:10, height:10, borderRadius:2, background:C.soft }}/>
-                      <span style={{ fontSize:11, color:C.muted }}>Photo / Manual</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <div style={{ width: 10, height: 10, borderRadius: 2, background: C.soft }}/>
+                      <span style={{ fontSize: 11, color: C.muted }}>Photo / Manual</span>
                     </div>
                   </div>
                 </>
@@ -445,15 +530,15 @@ export default function ClientDashboard() {
             <div>
               <div className="ranking-title">Provider Ranking (by verified jobs)</div>
               {loadingRanking ? (
-                [0,1,2,3,4].map(i => (
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:`1px solid ${C.border}` }}>
-                    <div className="skeleton" style={{ width:22, height:22, borderRadius:"50%", flexShrink:0 }}/>
-                    <div className="skeleton" style={{ flex:1, height:10 }}/>
-                    <div className="skeleton" style={{ width:48, height:10 }}/>
+                [0, 1, 2, 3, 4].map(i => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: `1px solid ${C.border}` }}>
+                    <div className="skeleton" style={{ width: 22, height: 22, borderRadius: "50%", flexShrink: 0 }}/>
+                    <div className="skeleton" style={{ flex: 1, height: 10 }}/>
+                    <div className="skeleton" style={{ width: 48, height: 10 }}/>
                   </div>
                 ))
               ) : rankings.length === 0 ? (
-                <div style={{ color:C.muted, fontSize:13, paddingTop:8 }}>No job data yet</div>
+                <div style={{ color: C.muted, fontSize: 13, paddingTop: 8 }}>No job data yet</div>
               ) : (
                 rankings.map((r, i) => (
                   <div className="rank-item" key={i}>
@@ -475,29 +560,29 @@ export default function ClientDashboard() {
           </div>
 
           {loadingScans ? (
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(320px,1fr))", gap:"0 32px" }}>
-              {[0,1,2,3,4,5].map(i => (
-                <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom:`1px solid ${C.border}` }}>
-                  <div className="skeleton" style={{ width:8, height:8, borderRadius:"50%", flexShrink:0 }}/>
-                  <div style={{ flex:1 }}>
-                    <div className="skeleton" style={{ height:10, marginBottom:6, width:"70%" }}/>
-                    <div className="skeleton" style={{ height:8, width:"50%" }}/>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px,1fr))", gap: "0 32px" }}>
+              {[0, 1, 2, 3, 4, 5].map(i => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: `1px solid ${C.border}` }}>
+                  <div className="skeleton" style={{ width: 8, height: 8, borderRadius: "50%", flexShrink: 0 }}/>
+                  <div style={{ flex: 1 }}>
+                    <div className="skeleton" style={{ height: 10, marginBottom: 6, width: "70%" }}/>
+                    <div className="skeleton" style={{ height: 8, width: "50%" }}/>
                   </div>
-                  <div className="skeleton" style={{ width:40, height:8 }}/>
-                  <div className="skeleton" style={{ width:60, height:20, borderRadius:20 }}/>
+                  <div className="skeleton" style={{ width: 40, height: 8 }}/>
+                  <div className="skeleton" style={{ width: 60, height: 20, borderRadius: 20 }}/>
                 </div>
               ))}
             </div>
           ) : errorScans ? (
-            <div style={{ color:C.danger, fontSize:13 }}>{errorScans}</div>
+            <div style={{ color: C.danger, fontSize: 13 }}>{errorScans}</div>
           ) : scans.length === 0 ? (
-            <div style={{ color:C.muted, fontSize:13 }}>No scans recorded yet</div>
+            <div style={{ color: C.muted, fontSize: 13 }}>No scans recorded yet</div>
           ) : (
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(320px,1fr))", gap:"0 32px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px,1fr))", gap: "0 32px" }}>
               {scans.map((s, i) => (
                 <div className="scan-row" key={i}>
                   <span className={`scan-dot ${dotClass(s.statusClass)}`}/>
-                  <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div className="scan-site">{s.site}</div>
                     <div className="scan-sub">{s.provider}</div>
                   </div>

@@ -1,33 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import { UserPlus, Users, Trash2, Mail, Shield, Eye, EyeOff } from 'lucide-react';
-import { team as teamApi, apiErrorMessage } from '../../api/client';
+import { team as teamApi, clientDashboard, apiErrorMessage } from '../../api/client';
 import './MyTeam.css';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Role label map  (client org can have client_staff or compliance_officer)
+//  Role label map
 // ─────────────────────────────────────────────────────────────────────────────
 const ROLE_LABEL = {
-  client_staff:        'Client Staff',
-  compliance_officer:  'Compliance Officer',
-  org_admin:           'Org Admin',
+  client_staff:       'Client Staff',
+  compliance_officer: 'Compliance Officer',
+  org_admin:          'Org Admin',
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Icons helper
+//  Bell icon — hardcoded white stroke so it always renders
 // ─────────────────────────────────────────────────────────────────────────────
-const Ico = ({ n, s = 15, c = '#fff' }) => {
-  const icons = {
-    bell:  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>,
-    users: <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>,
-  };
-  return icons[n] || null;
-};
+const BellIcon = () => (
+  <svg
+    width="17" height="17" viewBox="0 0 24 24"
+    fill="none" stroke="#ffffff" strokeWidth="2"
+    strokeLinecap="round" strokeLinejoin="round"
+    style={{ display: 'block', flexShrink: 0 }}
+  >
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+  </svg>
+);
+
+// Users icon for the nav
+const UsersNavIcon = () => (
+  <svg
+    width="16" height="16" viewBox="0 0 24 24"
+    fill="none" stroke="#ffffff" strokeWidth="2"
+    strokeLinecap="round" strokeLinejoin="round"
+    style={{ display: 'block', flexShrink: 0 }}
+  >
+    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+    <circle cx="9" cy="7" r="4"/>
+    <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+    <path d="M16 3.13a4 4 0 010 7.75"/>
+  </svg>
+);
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Top Navbar  (CLIENT portal label)
+//  Top Navbar — accepts navInfo prop for real org data
 // ─────────────────────────────────────────────────────────────────────────────
-const TopNavbar = ({ title, icon }) => {
+const TopNavbar = ({ title, navInfo, loadingNav }) => {
   const G = '#2b9d4e';
+
+  // Build initials from org name for the avatar
+  const initials = navInfo?.orgName
+    ? navInfo.orgName.split(' ').slice(0, 2).map(w => w[0] || '').join('').toUpperCase()
+    : '…';
+
   return (
     <nav style={{
       width: 'calc(100% - 240px)', height: 60, background: G, padding: '0 28px',
@@ -35,24 +60,83 @@ const TopNavbar = ({ title, icon }) => {
       position: 'fixed', top: 0, left: 240, zIndex: 100,
       boxShadow: '0 2px 8px rgba(0,0,0,0.06)', boxSizing: 'border-box',
     }}>
+      {/* Left: icon + title */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ width: 36, height: 36, background: 'rgba(255,255,255,0.12)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Ico n={icon} s={16} />
+        <div style={{
+          width: 36, height: 36,
+          background: 'rgba(255,255,255,0.12)',
+          borderRadius: 9,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <UsersNavIcon />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <span style={{ color: '#fff', fontSize: 15, fontWeight: 700, letterSpacing: '-0.3px', lineHeight: 1.2 }}>{title}</span>
-          {/* ← CLIENT PORTAL label */}
+          <span style={{ color: '#fff', fontSize: 15, fontWeight: 700, letterSpacing: '-0.3px', lineHeight: 1.2 }}>
+            {title}
+          </span>
           <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11 }}>CLIENT PORTAL</span>
         </div>
       </div>
+
+      {/* Right: bell + avatar + org name */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <button style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-          <Ico n="bell" s={15} />
-          <span style={{ position: 'absolute', top: 5, right: 6, width: 8, height: 8, background: '#F59E0B', borderRadius: '50%', border: `2px solid ${G}` }} />
+
+        {/* Notification bell */}
+        <button
+          aria-label="Notifications"
+          style={{
+            width: 34, height: 34, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.12)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            position: 'relative', padding: 0,
+            overflow: 'visible', flexShrink: 0,
+          }}
+        >
+          <BellIcon />
+          <span style={{
+            position: 'absolute', top: 4, right: 4,
+            width: 8, height: 8, background: '#F59E0B',
+            borderRadius: '50%', border: `2px solid ${G}`,
+            pointerEvents: 'none',
+          }}/>
         </button>
-        <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(255,255,255,0.18)', border: '2px solid rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 600 }}>AO</div>
-        <span style={{ color: '#fff', fontSize: 13, fontWeight: 500 }}>Asset Owner</span>
+
+        {/* Avatar — initials from real org name */}
+        <div style={{
+          width: 34, height: 34, borderRadius: '50%',
+          background: 'rgba(255,255,255,0.18)',
+          border: '2px solid rgba(255,255,255,0.35)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#fff', fontSize: 12, fontWeight: 600,
+          flexShrink: 0, letterSpacing: '0.3px',
+        }}>
+          {loadingNav ? '…' : initials}
+        </div>
+
+        {/* Org name — real data, skeleton while loading */}
+        {loadingNav ? (
+          <span style={{
+            display: 'inline-block', width: 90, height: 14,
+            borderRadius: 4,
+            background: 'rgba(255,255,255,0.2)',
+            animation: 'navPulse 1.4s infinite',
+          }}/>
+        ) : navInfo?.orgName ? (
+          <span style={{ color: '#fff', fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap' }}>
+            {navInfo.orgName}
+          </span>
+        ) : null}
       </div>
+
+      {/* Keyframe for the loading skeleton */}
+      <style>{`
+        @keyframes navPulse {
+          0%,100% { opacity: 0.4; }
+          50%      { opacity: 0.8; }
+        }
+      `}</style>
     </nav>
   );
 };
@@ -75,7 +159,20 @@ export default function MyTeam() {
   const [role,         setRole]         = useState('client_staff');
   const [showPassword, setShowPassword] = useState(false);
 
-  // ── Load team from API ────────────────────────────────────────────────────
+  // Navbar org data
+  const [navInfo,    setNavInfo]    = useState(null);
+  const [loadingNav, setLoadingNav] = useState(true);
+
+  // ── Load org info for navbar ───────────────────────────────────────────────
+  useEffect(() => {
+    setLoadingNav(true);
+    clientDashboard.me()
+      .then(data  => setNavInfo(data))
+      .catch(()   => setNavInfo({ orgName: '', siteLabel: '' }))
+      .finally(() => setLoadingNav(false));
+  }, []);
+
+  // ── Load team ─────────────────────────────────────────────────────────────
   const loadTeam = () => {
     setLoading(true);
     teamApi.list()
@@ -93,8 +190,6 @@ export default function MyTeam() {
     if (!fullName || !email || !password) return;
     setSubmitting(true);
     try {
-      // Backend auto-assigns role based on org type, but we send the chosen
-      // role so compliance_officer can be selected here.
       await teamApi.create({ fullName, email, password, role });
       setIsFormOpen(false);
       setShowSuccess(true);
@@ -123,7 +218,7 @@ export default function MyTeam() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div style={{ minHeight: '100vh', background: '#f0fdf4' }}>
-      <TopNavbar title="My Team" icon="users" />
+      <TopNavbar title="My Team" navInfo={navInfo} loadingNav={loadingNav} />
 
       <main style={{ marginTop: 60, padding: '32px', boxSizing: 'border-box' }}>
         <div className="my-team-container" style={{ padding: 0, maxWidth: 'none', margin: 0 }}>
@@ -151,7 +246,10 @@ export default function MyTeam() {
 
           {/* Error banner */}
           {error && (
-            <div style={{ padding: '10px 14px', background: '#fee2e2', color: '#991b1b', borderRadius: 8, marginBottom: 16, fontSize: 13 }}>
+            <div style={{
+              padding: '10px 14px', background: '#fee2e2', color: '#991b1b',
+              borderRadius: 8, marginBottom: 16, fontSize: 13,
+            }}>
               {error}
             </div>
           )}
@@ -190,14 +288,15 @@ export default function MyTeam() {
                         value={password} onChange={e => setPassword(e.target.value)}
                         className="input-field blue-bg" required
                       />
-                      <button type="button" className="password-toggle-btn"
-                        onClick={() => setShowPassword(p => !p)} tabIndex="-1">
+                      <button
+                        type="button" className="password-toggle-btn"
+                        onClick={() => setShowPassword(p => !p)} tabIndex="-1"
+                      >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
                   </div>
 
-                  {/* Client orgs can choose client_staff OR compliance_officer */}
                   <div className="form-group">
                     <label>Assigned Role</label>
                     <select
@@ -214,7 +313,9 @@ export default function MyTeam() {
                 </div>
 
                 <div className="form-actions">
-                  <button type="button" className="btn-cancel" onClick={() => setIsFormOpen(false)}>Cancel</button>
+                  <button type="button" className="btn-cancel" onClick={() => setIsFormOpen(false)}>
+                    Cancel
+                  </button>
                   <button type="submit" className="btn-create" disabled={submitting}>
                     {submitting ? 'Creating…' : 'Create Account'}
                   </button>
@@ -233,7 +334,6 @@ export default function MyTeam() {
               </div>
 
               {loading ? (
-                /* Skeleton rows */
                 <div className="table-body">
                   {[0,1,2].map(i => (
                     <div className="table-row" key={i} style={{ opacity: 0.5 }}>
@@ -259,7 +359,6 @@ export default function MyTeam() {
                     return (
                       <div className="table-row" key={member.id}>
                         <div className="col-member member-info">
-                          {/* API returns fullName (not name) */}
                           <span className="member-name">{member.fullName}</span>
                           <span className="member-email"><Mail size={14} />{member.email}</span>
                         </div>
@@ -268,7 +367,7 @@ export default function MyTeam() {
                         </div>
                         <div className="col-status">
                           <span className={`status-badge ${status.toLowerCase()}`}>
-                            <span className="status-dot" />{status}
+                            <span className="status-dot"/>{status}
                           </span>
                         </div>
                         <div className="col-actions">
