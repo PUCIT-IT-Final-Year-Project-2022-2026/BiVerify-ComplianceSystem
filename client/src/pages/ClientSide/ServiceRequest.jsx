@@ -7,7 +7,7 @@ const srApi = {
   providers:   ()      => api.get("/api/service-request/providers").then(r => r.data),
   clientStaff: ()      => api.get("/api/service-request/client-staff").then(r => r.data),
   sites:       ()      => api.get("/api/service-request/sites").then(r => r.data),
-  addSite:     (label) => api.post("/api/locations", { label }).then(r => r.data),
+  addSite:     (label, address) => api.post("/api/locations", { label, address }).then(r => r.data),
   submit:      (payload) => api.post("/api/service-request/submit", payload).then(r => r.data),
 };
 
@@ -466,9 +466,11 @@ function LocationMap({ pin, onPin, onAddressChange }) {
   );
 }
 
-// ── Address fields with auto-fill badge support ───────────────────────────────
-function AddressFields({ addr, onChange, autoFilled }) {
-  const Af = ({ label, field, placeholder, full = false }) => (
+// ── Single address field — defined OUTSIDE AddressFields so React never
+//    treats it as a new component type on re-render (which would unmount
+//    the <input> and lose focus after every keystroke).
+function AddrField({ label, field, placeholder, full, addr, onChange, autoFilled }) {
+  return (
     <div className={`addr-field-wrap${full ? " addr-full" : ""}`} style={{ marginBottom: 0 }}>
       <div className="f-lbl" style={{ marginBottom: 5 }}>{label}</div>
       <div style={{ position: "relative" }}>
@@ -485,16 +487,19 @@ function AddressFields({ addr, onChange, autoFilled }) {
       </div>
     </div>
   );
+}
 
+// ── Address fields with auto-fill badge support ───────────────────────────────
+function AddressFields({ addr, onChange, autoFilled }) {
   return (
     <div className="addr-grid" style={{ gap: 12 }}>
-      <Af label="Street / Road" field="street"       placeholder="e.g. Main Boulevard"           />
-      <Af label="House / Plot No." field="streetNumber" placeholder="e.g. 12-B"                  />
-      <Af label="Area / Locality"  field="area"        placeholder="e.g. Gulberg III"             />
-      <Af label="City"             field="city"        placeholder="e.g. Lahore"                  />
-      <Af label="State / Province" field="state"       placeholder="e.g. Punjab"                  />
-      <Af label="Postcode"         field="postcode"    placeholder="e.g. 54000"                   />
-      <Af label="Country"          field="country"     placeholder="e.g. Pakistan"                />
+      <AddrField label="Street / Road"    field="street"       placeholder="e.g. Main Boulevard" addr={addr} onChange={onChange} autoFilled={autoFilled} />
+      <AddrField label="House / Plot No." field="streetNumber" placeholder="e.g. 12-B"           addr={addr} onChange={onChange} autoFilled={autoFilled} />
+      <AddrField label="Area / Locality"  field="area"         placeholder="e.g. Gulberg III"    addr={addr} onChange={onChange} autoFilled={autoFilled} />
+      <AddrField label="City"             field="city"         placeholder="e.g. Lahore"         addr={addr} onChange={onChange} autoFilled={autoFilled} />
+      <AddrField label="State / Province" field="state"        placeholder="e.g. Punjab"         addr={addr} onChange={onChange} autoFilled={autoFilled} />
+      <AddrField label="Postcode"         field="postcode"     placeholder="e.g. 54000"          addr={addr} onChange={onChange} autoFilled={autoFilled} />
+      <AddrField label="Country"          field="country"      placeholder="e.g. Pakistan"       addr={addr} onChange={onChange} autoFilled={autoFilled} />
     </div>
   );
 }
@@ -833,7 +838,9 @@ export default function ServiceRequest() {
                         if (!newSiteLabel.trim()) return;
                         setAddingSite(true);
                         try {
-                          const data = await srApi.addSite(newSiteLabel.trim());
+                          const addrLine = buildAddressLine();
+                          if (!addrLine) { showToast("Please fill in at least City and Street before saving a site."); setAddingSite(false); return; }
+                          const data = await srApi.addSite(newSiteLabel.trim(), addrLine);
                           const newSite = { id: data.id, label: data.label };
                           setSites(prev => [...prev, newSite]);
                           setSelectedSite(newSite);
@@ -850,7 +857,9 @@ export default function ServiceRequest() {
                         if (!newSiteLabel.trim()) return;
                         setAddingSite(true);
                         try {
-                          const data = await srApi.addSite(newSiteLabel.trim());
+                          const addrLine = buildAddressLine();
+                          if (!addrLine) { showToast("Please fill in at least City and Street before saving a site."); setAddingSite(false); return; }
+                          const data = await srApi.addSite(newSiteLabel.trim(), addrLine);
                           const newSite = { id: data.id, label: data.label };
                           setSites(prev => [...prev, newSite]);
                           setSelectedSite(newSite);
