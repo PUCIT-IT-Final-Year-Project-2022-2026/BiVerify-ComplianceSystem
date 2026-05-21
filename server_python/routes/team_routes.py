@@ -4,7 +4,7 @@ from bson.errors import InvalidId
 from flask import Blueprint, request, jsonify, g
 from db import get_db
 from auth import require_role, hash_password
-from audit import write_audit
+from utils.audit import write_audit
 
 bp = Blueprint("team", __name__, url_prefix="/api/team")
 

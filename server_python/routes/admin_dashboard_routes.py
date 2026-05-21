@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, g
 from db import get_db
 from auth import require_role
-from audit import write_audit
+from utils.audit import write_audit
 from datetime import datetime, timezone
 
 bp = Blueprint("admin_dashboard", __name__, url_prefix="/api/admin/dashboard")

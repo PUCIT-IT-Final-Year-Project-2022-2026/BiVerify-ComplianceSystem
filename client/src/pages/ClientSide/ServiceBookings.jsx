@@ -73,7 +73,6 @@ const SbIco = ({ n, s = 15, c = "rgba(255,255,255,0.75)" }) => {
 const Ico = ({ n, s = 15, c = "#fff" }) => {
   const d = {
     bookings:   <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
-    bell:       <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>,
     plus:       <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
     unassigned: <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
     process:    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>,
@@ -330,7 +329,6 @@ export default function ServiceBookings() {
   // UI
   const [hoverRow,        setHoverRow]        = useState(null);
   const [selectedBooking, setSelectedBooking] = useState(null);
-  const [showNotifs,      setShowNotifs]      = useState(false);
 
   /* ── fetch stats ── */
   const fetchStats = useCallback(async () => {
@@ -363,14 +361,6 @@ export default function ServiceBookings() {
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
   useEffect(() => { fetchList();  }, [fetchList]);
-
-  /* ── close notifications on outside click ── */
-  useEffect(() => {
-    if (!showNotifs) return;
-    function handleOutside() { setShowNotifs(false); }
-    document.addEventListener("click", handleOutside);
-    return () => document.removeEventListener("click", handleOutside);
-  }, [showNotifs]);
 
   /* ── cancel handler ── */
   async function handleCancel(id) {
@@ -451,7 +441,7 @@ export default function ServiceBookings() {
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 10, position: "relative" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div
               onClick={() => navigate("/new-request")}
               onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.18)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
@@ -459,82 +449,6 @@ export default function ServiceBookings() {
               style={{ background: "#fff", color: G, padding: "7px 16px", borderRadius: 8, fontWeight: 700, fontSize: 13, display: "inline-flex", alignItems: "center", gap: 6, boxShadow: "0 2px 8px rgba(0,0,0,0.1)", cursor: "pointer", transition: "box-shadow 0.15s, transform 0.15s", fontFamily: "'DM Sans', sans-serif" }}
             >
               <Ico n="plus" s={13} c={G}/> New Request
-            </div>
-
-            {/* ── Bell / Notifications ── */}
-            <div style={{ position: "relative" }}>
-              <div
-                onClick={() => setShowNotifs(v => !v)}
-                style={{ width: 34, height: 34, borderRadius: "50%", background: showNotifs ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.12)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", transition: "background 0.15s" }}
-              >
-                <Ico n="bell" s={15} c="rgba(255,255,255,0.85)"/>
-                {pendingCount > 0 && (
-                  <span style={{ position: "absolute", top: 5, right: 6, width: 8, height: 8, background: "#F59E0B", borderRadius: "50%", border: `2px solid ${GD}` }}/>
-                )}
-              </div>
-
-              {/* Notification dropdown */}
-              {showNotifs && (
-                <div
-                  onClick={e => e.stopPropagation()}
-                  style={{
-                    position: "absolute", top: 42, right: 0, width: 320,
-                    background: "#fff", borderRadius: 12, boxShadow: "0 8px 30px rgba(0,0,0,0.18)",
-                    border: "1px solid rgba(43,157,78,0.15)", zIndex: 500, overflow: "hidden",
-                    fontFamily: "'DM Sans', sans-serif",
-                  }}
-                >
-                  <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(43,157,78,0.1)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: "#1A1D23" }}>Notifications</span>
-                    {pendingCount > 0 && (
-                      <span style={{ background: "rgba(245,158,11,0.12)", color: "#92400e", borderRadius: 20, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>
-                        {pendingCount} pending
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ maxHeight: 280, overflowY: "auto" }}>
-                    {pendingCount === 0 ? (
-                      <div style={{ padding: "24px 16px", textAlign: "center", color: "#9CA3AF", fontSize: 13 }}>
-                        <div style={{ fontSize: 22, marginBottom: 6 }}>🔔</div>
-                        No new notifications
-                      </div>
-                    ) : (
-                      bookingList
-                        .filter(b => b.status === "pending")
-                        .map((b, i) => (
-                          <div
-                            key={b.id || i}
-                            onClick={() => { setSelectedBooking(b); setShowNotifs(false); }}
-                            style={{
-                              padding: "11px 16px", borderBottom: "1px solid rgba(43,157,78,0.06)",
-                              cursor: "pointer", display: "flex", gap: 10, alignItems: "flex-start",
-                              transition: "background 0.12s",
-                            }}
-                            onMouseEnter={e => e.currentTarget.style.background = "rgba(43,157,78,0.04)"}
-                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                          >
-                            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#F59E0B", marginTop: 5, flexShrink: 0 }}/>
-                            <div>
-                              <div style={{ fontSize: 12.5, fontWeight: 600, color: "#1A1D23" }}>{b.service}</div>
-                              <div style={{ fontSize: 11.5, color: "#6B7280", marginTop: 2 }}>
-                                {b.partner || "—"} · {b.po || "—"}
-                              </div>
-                              <div style={{ fontSize: 11, color: "#F59E0B", fontWeight: 600, marginTop: 2 }}>Awaiting action</div>
-                            </div>
-                          </div>
-                        ))
-                    )}
-                  </div>
-                  {pendingCount > 0 && (
-                    <div style={{ padding: "10px 16px", borderTop: "1px solid rgba(43,157,78,0.1)", textAlign: "center" }}>
-                      <span
-                        onClick={() => { setStatusFilter("pending"); setShowNotifs(false); }}
-                        style={{ fontSize: 12, color: G, fontWeight: 600, cursor: "pointer" }}
-                      >View all pending →</span>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
 
             {/* ── Profile avatar ── */}

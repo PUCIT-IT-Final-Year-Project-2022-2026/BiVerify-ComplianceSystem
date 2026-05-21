@@ -16,6 +16,8 @@ from routes.b2b_routes import bp as b2b_bp
 from routes.client_dashboard_routes import bp as client_dashboard_bp
 from routes.compliance_routes import bp as provider_compliance_bp
 from routes.client_settings_routes import bp as client_settings_bp
+from routes.audit_routes import bp as audit_bp
+
 
 
 def create_app():
@@ -59,6 +61,7 @@ def create_app():
     app.register_blueprint(client_dashboard_bp)
     app.register_blueprint(provider_compliance_bp)
     app.register_blueprint(client_settings_bp)
+    app.register_blueprint(audit_bp)
 
     @app.get("/api/health")
     def health():

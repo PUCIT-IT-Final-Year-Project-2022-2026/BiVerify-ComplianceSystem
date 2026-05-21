@@ -8,8 +8,7 @@ const GD = "#1f7a3b";
 
 const Ico = ({ n, s = 15, c = "#fff" }) => {
   const icons = {
-    bell: <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>,
-    qr:   <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="2"/></svg>,
+    qr: <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="2"/></svg>,
   };
   return icons[n] || null;
 };
@@ -70,14 +69,14 @@ function VerifyProvider() {
   return (
     <div style={{ minHeight: "100vh", background: "#F5F6FA", fontFamily: "'Inter', sans-serif" }}>
 
-      {/* ── SIDEBAR — reusable component, no sidebar code here ── */}
+      {/* ── SIDEBAR ── */}
       <ComplianceSidebar />
 
-      {/* ── TOP NAV — specific to this page, starts after sidebar ── */}
+      {/* ── TOP NAV ── */}
       <nav style={{
         width: "calc(100% - 240px)",
         height: 60,
-        background: G,                              // #1f7a3b — darker than sidebar
+        background: G,
         padding: "0 24px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         position: "fixed", top: 0, left: 240, zIndex: 9999,
@@ -94,12 +93,8 @@ function VerifyProvider() {
           </div>
         </div>
 
-        {/* Right: bell + avatar */}
+        {/* Right: avatar */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <button style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-            <Ico n="bell" s={15} c="#fff" />
-            <span style={{ position: "absolute", top: 5, right: 6, width: 8, height: 8, background: "#F59E0B", borderRadius: "50%", border: `2px solid ${GD}` }} />
-          </button>
           <div style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(255,255,255,0.18)", border: "2px solid rgba(255,255,255,0.35)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 600 }}>AO</div>
           <span style={{ color: "#fff", fontSize: 13, fontWeight: 500 }}>Asset Owner</span>
         </div>

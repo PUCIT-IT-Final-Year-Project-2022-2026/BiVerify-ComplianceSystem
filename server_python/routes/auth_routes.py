@@ -5,7 +5,7 @@ from bson import ObjectId
 from flask import Blueprint, request, jsonify, g
 from db import get_db
 from auth import hash_password, verify_password, issue_token, require_auth
-from audit import write_audit
+from utils.audit import write_audit
 from email_service import send_reset_otp
 
 bp = Blueprint("auth", __name__, url_prefix="/api/auth")

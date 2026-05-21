@@ -25,7 +25,7 @@ from bson import ObjectId
 from flask import Blueprint, g, jsonify, request
 
 from auth import require_role, verify_password, hash_password
-from audit import write_audit
+from utils.audit import write_audit
 from db import get_db
 
 bp = Blueprint("client_settings", __name__, url_prefix="/api/client/settings")
