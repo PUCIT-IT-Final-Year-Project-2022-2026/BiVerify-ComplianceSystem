@@ -18,6 +18,7 @@ from routes.compliance_routes import bp as provider_compliance_bp
 from routes.client_settings_routes import bp as client_settings_bp
 from routes.audit_routes import bp as audit_bp
 
+from routes.provider_compliance_documents_routes import bp as provider_comp_docs_bp   # ← NEW
 
 
 def create_app():
@@ -62,6 +63,7 @@ def create_app():
     app.register_blueprint(provider_compliance_bp)
     app.register_blueprint(client_settings_bp)
     app.register_blueprint(audit_bp)
+    app.register_blueprint(provider_comp_docs_bp)          # ← NEW
 
     @app.get("/api/health")
     def health():
