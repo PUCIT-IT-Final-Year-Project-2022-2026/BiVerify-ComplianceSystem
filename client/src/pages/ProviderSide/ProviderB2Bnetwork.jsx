@@ -95,14 +95,44 @@ const css = `
   .btn-reject:hover { border-color: ${C.danger}; color: ${C.danger}; background: ${C.dangerBg}; }
   .btn-disconnect { background: transparent; color: ${C.muted}; border: 1px solid ${C.border}; border-radius: 7px; padding: 5px 9px; font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.13s; }
   .btn-disconnect:hover { border-color: ${C.danger}; color: ${C.danger}; background: ${C.dangerBg}; }
+  .btn-withdraw { background: transparent; color: ${C.muted}; border: 1px solid ${C.border}; border-radius: 7px; padding: 5px 10px; font-size: 11.5px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.13s; display: flex; align-items: center; gap: 4px; }
+  .btn-withdraw:hover { border-color: ${C.danger}; color: ${C.danger}; background: ${C.dangerBg}; }
 
   .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
   .b-client { background: rgba(99,102,241,0.08); color: #4338ca; border: 1px solid rgba(99,102,241,0.2); }
   .b-provider { background: ${C.bgIcon}; color: ${C.dark}; border: 1px solid ${C.borderMed}; }
   .b-pending { background: ${C.warnBg}; color: #92400e; border: 1px solid rgba(245,158,11,0.25); }
+  .b-sent { background: rgba(99,102,241,0.07); color: #4338ca; border: 1px solid rgba(99,102,241,0.18); }
   .bdot { width: 5px; height: 5px; border-radius: 50%; }
   .bdot-g { background: ${C.primary}; }
   .bdot-w { background: ${C.warning}; }
+  .bdot-b { background: #6366f1; }
+
+  /* pending section dividers */
+  .pending-section-label {
+    padding: 10px 18px 5px;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.65px;
+    color: ${C.muted};
+    background: ${C.bgLight};
+    border-bottom: 1px solid ${C.border};
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pending-section-label .psl-count {
+    background: ${C.warning};
+    color: #fff;
+    border-radius: 20px;
+    padding: 1px 7px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .pending-section-label .psl-count.blue {
+    background: #6366f1;
+  }
 
   .right-col { display: flex; flex-direction: column; gap: 14px; }
 
@@ -160,6 +190,9 @@ const css = `
   .rm-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
   .rm-cancel { background: transparent; color: ${C.muted}; border: 1px solid ${C.border}; border-radius: 8px; padding: 8px 16px; font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
   .rm-confirm { background: ${C.danger}; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+
+  .withdraw-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; z-index: 200; }
+  .withdraw-modal { background: #fff; border-radius: 14px; padding: 24px; width: 360px; max-width: 90vw; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
 
   .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; gap: 8px; }
   .empty-ico { width: 48px; height: 48px; border-radius: 12px; background: ${C.bgIcon}; display: flex; align-items: center; justify-content: center; }
@@ -314,6 +347,7 @@ const Ico = ({ n, s = 16, c = C.primary }) => {
     location: <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>,
     email:    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
     warn:     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+    xCircle:  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>,
   };
   return d[n] || null;
 };
@@ -441,6 +475,8 @@ export default function ProviderB2BNetwork() {
   const [rejectTarget, setRejectTarget] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
   const [rejecting, setRejecting]       = useState(false);
+  const [withdrawTarget, setWithdrawTarget] = useState(null);
+  const [withdrawing, setWithdrawing]       = useState(false);
 
   const [orgQuery, setOrgQuery]       = useState("");
   const [ddResults, setDdResults]     = useState([]);
@@ -452,11 +488,11 @@ export default function ProviderB2BNetwork() {
 
   const [toast, setToast]             = useState(null);
   const [selectedPartner, setSelectedPartner] = useState(null);
-  const [previewOrg, setPreviewOrg]   = useState(null);   // ← new
+  const [previewOrg, setPreviewOrg]   = useState(null);
 
-  const ddRef    = useRef(null);
-  const ccBodyRef = useRef(null);                          // ← new
-  const MAX_MSG  = 160;
+  const ddRef     = useRef(null);
+  const ccBodyRef = useRef(null);
+  const MAX_MSG   = 160;
 
   const showToast = (msg, type = "ok") => {
     setToast({ msg, type });
@@ -550,6 +586,21 @@ export default function ProviderB2BNetwork() {
     }
   };
 
+  const handleWithdrawConfirm = async () => {
+    if (!withdrawTarget) return;
+    setWithdrawing(true);
+    try {
+      await api.delete(`/api/b2b/connections/${withdrawTarget.id}`);
+      showToast(`Request to ${withdrawTarget.name} withdrawn.`);
+      setWithdrawTarget(null);
+      await loadData();
+    } catch (err) {
+      showToast(apiErrorMessage(err), "err");
+    } finally {
+      setWithdrawing(false);
+    }
+  };
+
   const handleDisconnect = async (connId, name) => {
     try {
       await api.delete(`/api/b2b/connections/${connId}`);
@@ -560,7 +611,6 @@ export default function ProviderB2BNetwork() {
     }
   };
 
-  // ← new: called from modal CTA
   const handlePreviewConnect = (org) => {
     setSelectedOrg(org);
     setOrgQuery("");
@@ -570,11 +620,14 @@ export default function ProviderB2BNetwork() {
     }, 80);
   };
 
-  const pending   = connections.filter(c => c.status === "pending"  && c.direction === "incoming");
-  const connected = connections.filter(c => c.status === "connected");
-  const history   = connections.filter(c => c.status === "disconnected" || c.status === "blocked");
+  // ── Derived lists ────────────────────────────────────────────────────────
+  const pendingIncoming = connections.filter(c => c.status === "pending" && c.direction === "incoming");
+  const pendingOutgoing = connections.filter(c => c.status === "pending" && c.direction === "outgoing");
+  const pending         = connections.filter(c => c.status === "pending"); // all, for counts
+  const connected       = connections.filter(c => c.status === "connected");
+  const history         = connections.filter(c => c.status === "disconnected" || c.status === "blocked");
 
-  const filterBySearch = (list) => {
+  const applySearch = (list) => {
     if (!search.trim()) return list;
     const q = search.toLowerCase();
     return list.filter(c =>
@@ -583,8 +636,13 @@ export default function ProviderB2BNetwork() {
     );
   };
 
-  const tabMap = { pending, connected, history };
-  const displayList = filterBySearch(tabMap[activeTab] || []);
+  // For non-pending tabs we still use simple displayList
+  const tabMap = { connected, history };
+  const displayList = applySearch(tabMap[activeTab] || []);
+
+  // Filtered pending sub-lists
+  const filteredIncoming = applySearch(pendingIncoming);
+  const filteredOutgoing = applySearch(pendingOutgoing);
 
   if (selectedPartner) {
     return (
@@ -613,7 +671,7 @@ export default function ProviderB2BNetwork() {
           <div className="topnav-site"><span className="pulse-dot"/>Live</div>
           <button className="notif-btn">
             <Ico n="bell" s={15} c="rgba(255,255,255,0.85)"/>
-            {pending.length > 0 && <span className="notif-pip"/>}
+            {pendingIncoming.length > 0 && <span className="notif-pip"/>}
           </button>
         </div>
       </nav>
@@ -627,10 +685,10 @@ export default function ProviderB2BNetwork() {
 
         <div className="stat-strip fu fu1">
           {[
-            { ico: "partners", icoCls: "",    val: stats.connected, lbl: "Connected clients"  },
-            { ico: "clock",    icoCls: "warn", val: stats.pending,   lbl: "Pending requests"  },
-            { ico: "globe",    icoCls: "",     val: stats.total,     lbl: "Total connections" },
-            { ico: "check",    icoCls: "",     val: history.length,  lbl: "Past connections"  },
+            { ico: "partners", icoCls: "",    val: stats.connected,      lbl: "Connected clients"  },
+            { ico: "clock",    icoCls: "warn", val: stats.pending,        lbl: "Pending requests"  },
+            { ico: "globe",    icoCls: "",     val: stats.total,          lbl: "Total connections" },
+            { ico: "check",    icoCls: "",     val: history.length,       lbl: "Past connections"  },
           ].map((s, i) => (
             <div className="stat-card" key={i}>
               <div className={`stat-ico ${s.icoCls}`}>
@@ -657,8 +715,8 @@ export default function ProviderB2BNetwork() {
             <div className="tab-row">
               {[
                 { key: "pending",   label: "Pending",   count: pending.length,   countCls: "" },
-                { key: "connected", label: "Connected", count: connected.length,  countCls: "green" },
-                { key: "history",   label: "History",   count: history.length,    countCls: "" },
+                { key: "connected", label: "Connected", count: connected.length, countCls: "green" },
+                { key: "history",   label: "History",   count: history.length,   countCls: "" },
               ].map(t => (
                 <button key={t.key} className={`tab ${activeTab === t.key ? "active" : ""}`} onClick={() => setActiveTab(t.key)}>
                   {t.label}
@@ -685,16 +743,92 @@ export default function ProviderB2BNetwork() {
                     </div>
                   </div>
                 ))
+              ) : activeTab === "pending" ? (
+                <>
+                  {/* ── Outgoing / sent requests ── */}
+                  {filteredOutgoing.length > 0 && (
+                    <>
+                      <div className="pending-section-label">
+                        <Ico n="send" s={11} c={C.muted}/>
+                        Sent by you · awaiting response
+                        <span className="psl-count blue">{filteredOutgoing.length}</span>
+                      </div>
+                      {filteredOutgoing.map(c => (
+                        <div className="req-row" key={c.id} onClick={() => setSelectedPartner(c.id)}>
+                          <div className="req-av">{initials(c.partner?.name)}</div>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div className="req-name">{c.partner?.name}</div>
+                            <div className="req-ind">{c.partner?.industry}</div>
+                            {c.notes && <div className="req-msg">"{c.notes}"</div>}
+                            <div className="req-meta">Sent {fmtDate(c.createdAt)}</div>
+                          </div>
+                          <span className={`badge ${c.partner?.type === "client" ? "b-client" : "b-provider"}`}>
+                            <span className="bdot bdot-g"/>{c.partner?.type}
+                          </span>
+                          <div className="req-actions">
+                            <span className="badge b-sent"><span className="bdot bdot-b"/>Awaiting</span>
+                            <button
+                              className="btn-withdraw"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setWithdrawTarget({ id: c.id, name: c.partner?.name });
+                              }}
+                            >
+                              <Ico n="xCircle" s={12} c="currentColor"/>
+                              Withdraw
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+
+                  {/* ── Incoming requests ── */}
+                  {filteredIncoming.length > 0 && (
+                    <>
+                      <div className="pending-section-label" style={{ borderTop: filteredOutgoing.length > 0 ? `1px solid ${C.border}` : "none" }}>
+                        <Ico n="inbox" s={11} c={C.muted}/>
+                        Received · awaiting your response
+                        <span className="psl-count">{filteredIncoming.length}</span>
+                      </div>
+                      {filteredIncoming.map(c => (
+                        <div className="req-row" key={c.id} onClick={() => setSelectedPartner(c.id)}>
+                          <div className="req-av">{initials(c.partner?.name)}</div>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div className="req-name">{c.partner?.name}</div>
+                            <div className="req-ind">{c.partner?.industry}</div>
+                            {c.notes && <div className="req-msg">"{c.notes}"</div>}
+                            <div className="req-meta">Requested {fmtDate(c.createdAt)}</div>
+                          </div>
+                          <span className={`badge ${c.partner?.type === "client" ? "b-client" : "b-provider"}`}>
+                            <span className="bdot bdot-g"/>{c.partner?.type}
+                          </span>
+                          <div className="req-actions">
+                            <button className="btn-accept" onClick={(e) => { e.stopPropagation(); handleAccept(c.id, c.partner?.name); }}>Accept</button>
+                            <button className="btn-reject" onClick={(e) => { e.stopPropagation(); setRejectTarget({ id: c.id, name: c.partner?.name }); setRejectReason(""); }}>Decline</button>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+
+                  {/* ── Empty state ── */}
+                  {filteredOutgoing.length === 0 && filteredIncoming.length === 0 && (
+                    <div className="empty">
+                      <div className="empty-ico"><Ico n="inbox" s={22} c={C.primary}/></div>
+                      <div className="empty-t">No pending requests</div>
+                      <div className="empty-s">New requests from organizations will appear here</div>
+                    </div>
+                  )}
+                </>
               ) : displayList.length === 0 ? (
                 <div className="empty">
                   <div className="empty-ico"><Ico n="inbox" s={22} c={C.primary}/></div>
                   <div className="empty-t">
-                    {activeTab === "pending"   ? "No pending requests" :
-                     activeTab === "connected" ? "No connected clients" : "No history yet"}
+                    {activeTab === "connected" ? "No connected clients" : "No history yet"}
                   </div>
                   <div className="empty-s">
-                    {activeTab === "pending"   ? "New requests from organizations will appear here" :
-                     activeTab === "connected" ? "Accepted connections will appear here" : "Declined or removed connections appear here"}
+                    {activeTab === "connected" ? "Accepted connections will appear here" : "Declined or removed connections appear here"}
                   </div>
                 </div>
               ) : displayList.map(c => (
@@ -714,12 +848,6 @@ export default function ProviderB2BNetwork() {
                     <span className="bdot bdot-g"/>{c.partner?.type}
                   </span>
                   <div className="req-actions">
-                    {activeTab === "pending" && (
-                      <>
-                        <button className="btn-accept" onClick={(e) => { e.stopPropagation(); handleAccept(c.id, c.partner?.name); }}>Accept</button>
-                        <button className="btn-reject" onClick={(e) => { e.stopPropagation(); setRejectTarget({ id: c.id, name: c.partner?.name }); setRejectReason(""); }}>Decline</button>
-                      </>
-                    )}
                     {activeTab === "connected" && (
                       <button className="btn-disconnect" onClick={(e) => { e.stopPropagation(); handleDisconnect(c.id, c.partner?.name); }}>
                         <Ico n="trash" s={12} c="currentColor"/>
@@ -828,8 +956,12 @@ export default function ProviderB2BNetwork() {
                   <span className="ic-val">{stats.connected}</span>
                 </div>
                 <div className="ic-row">
-                  <span className="ic-lbl">Awaiting your decision</span>
-                  <span className="ic-val">{stats.pending}</span>
+                  <span className="ic-lbl">Received · awaiting you</span>
+                  <span className="ic-val">{pendingIncoming.length}</span>
+                </div>
+                <div className="ic-row">
+                  <span className="ic-lbl">Sent · awaiting them</span>
+                  <span className="ic-val">{pendingOutgoing.length}</span>
                 </div>
                 <div className="ic-row">
                   <span className="ic-lbl">Past connections</span>
@@ -842,14 +974,14 @@ export default function ProviderB2BNetwork() {
               </div>
             </div>
 
-            {pending.length > 0 && (
+            {pendingIncoming.length > 0 && (
               <div className="info-card">
                 <div className="ic-head" style={{background: C.warning}}>
-                  <div className="ic-head-t">{pending.length} Request{pending.length > 1 ? "s" : ""} Awaiting</div>
+                  <div className="ic-head-t">{pendingIncoming.length} Request{pendingIncoming.length > 1 ? "s" : ""} Awaiting</div>
                   <div className="ic-head-s">Review and respond to stay current</div>
                 </div>
                 <div className="ic-body">
-                  {pending.slice(0, 3).map(c => (
+                  {pendingIncoming.slice(0, 3).map(c => (
                     <div key={c.id} style={{display:"flex",alignItems:"center",gap:10,paddingBottom:10,borderBottom:`1px solid ${C.border}`,cursor:"pointer"}} onClick={() => setSelectedPartner(c.id)}>
                       <div style={{width:32,height:32,borderRadius:8,background:C.bgIcon,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:C.dark,fontFamily:"'DM Mono', monospace",flexShrink:0}}>
                         {initials(c.partner?.name)}
@@ -860,8 +992,8 @@ export default function ProviderB2BNetwork() {
                       </div>
                     </div>
                   ))}
-                  {pending.length > 3 && (
-                    <div style={{fontSize:12,color:C.muted,textAlign:"center",marginTop:4}}>+{pending.length - 3} more — switch to Pending tab</div>
+                  {pendingIncoming.length > 3 && (
+                    <div style={{fontSize:12,color:C.muted,textAlign:"center",marginTop:4}}>+{pendingIncoming.length - 3} more — switch to Pending tab</div>
                   )}
                 </div>
               </div>
@@ -879,6 +1011,7 @@ export default function ProviderB2BNetwork() {
         />
       )}
 
+      {/* ── Reject Modal ── */}
       {rejectTarget && (
         <div className="reject-modal-overlay" onClick={() => setRejectTarget(null)}>
           <div className="reject-modal" onClick={e => e.stopPropagation()}>
@@ -896,6 +1029,22 @@ export default function ProviderB2BNetwork() {
               <button className="rm-cancel" onClick={() => setRejectTarget(null)}>Cancel</button>
               <button className="rm-confirm" onClick={handleRejectConfirm} disabled={rejecting}>
                 {rejecting ? "Declining…" : "Decline Request"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Withdraw Modal ── */}
+      {withdrawTarget && (
+        <div className="withdraw-modal-overlay" onClick={() => setWithdrawTarget(null)}>
+          <div className="withdraw-modal" onClick={e => e.stopPropagation()}>
+            <div className="rm-title">Withdraw request to {withdrawTarget.name}?</div>
+            <div className="rm-sub">This will cancel your pending connection request. You can send a new one at any time.</div>
+            <div className="rm-actions">
+              <button className="rm-cancel" onClick={() => setWithdrawTarget(null)}>Keep Request</button>
+              <button className="rm-confirm" onClick={handleWithdrawConfirm} disabled={withdrawing}>
+                {withdrawing ? "Withdrawing…" : "Withdraw Request"}
               </button>
             </div>
           </div>
