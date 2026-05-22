@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { complianceVault, apiErrorMessage, auth, getUser } from "../../api/client";
+import { complianceVault, apiErrorMessage, auth, getUser, API_BASE } from "../../api/client";
 import api from "../../api/client";
 
 const C = {
@@ -332,7 +332,10 @@ export default function ComplianceVault() {
     try {
       const res = await complianceVault.downloadUrl(doc.id);
       if (res.url) {
-        window.open(res.url, "_blank", "noopener,noreferrer");
+        // Prefix relative paths with API_BASE so the file loads from
+        // Flask (port 5050), not the Vite dev server (which serves React → /login).
+        const fullUrl = res.url.startsWith("http") ? res.url : `${API_BASE}${res.url}`;
+        window.open(fullUrl, "_blank", "noopener,noreferrer");
         showToast(`Downloading ${doc.docType}…`);
       } else {
         showToast("File URL not available");
