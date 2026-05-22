@@ -81,8 +81,8 @@ def scan_booking():
 def my_jobs():
     db = get_db()
     cur = db.service_requests.find({
-        "assignedStaffId": g.user["_id"],
-        "status": {"$in": ["accepted", "in_progress"]},
+        "assignedProviderStaffId": g.user["_id"],
+        "status": {"$in": ["accepted", "pending"]},
     }).sort("scheduledDate", 1)
 
     out = []

@@ -453,7 +453,7 @@ def booking_qr(booking_id):
     role = g.user["role"]
     if role == "org_admin" and sr["clientOrgId"] != g.user["orgId"]:
         return _err("FORBIDDEN", "Not your booking", 403)
-    if role == "provider_staff" and sr.get("assignedStaffId") != g.user["_id"]:
+    if role == "provider_staff" and sr.get("assignedProviderStaffId") != g.user["_id"]:
         return _err("FORBIDDEN", "Not assigned to you", 403)
 
     po = db.purchase_orders.find_one({"requestId": sr_oid})
