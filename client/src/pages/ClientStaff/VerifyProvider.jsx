@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Html5Qrcode } from "html5-qrcode";
-import ComplianceSidebar from "../../components/ComplianceSidebar";
 import { scan, apiErrorMessage } from "../../api/client";
 
 const G = "#2b9d4e";
@@ -8,7 +7,8 @@ const GD = "#1f7a3b";
 
 const Ico = ({ n, s = 15, c = "#fff" }) => {
   const icons = {
-    qr: <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="2"/></svg>,
+    bell: <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>,
+    qr:   <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="2"/></svg>,
   };
   return icons[n] || null;
 };
@@ -67,42 +67,8 @@ function VerifyProvider() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F5F6FA", fontFamily: "'Inter', sans-serif" }}>
-
-      {/* ── SIDEBAR ── */}
-      <ComplianceSidebar />
-
-      {/* ── TOP NAV ── */}
-      <nav style={{
-        width: "calc(100% - 240px)",
-        height: 60,
-        background: G,
-        padding: "0 24px",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        position: "fixed", top: 0, left: 240, zIndex: 9999,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.06)", boxSizing: "border-box",
-      }}>
-        {/* Left: icon + title + subtitle */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 36, height: 36, background: "rgba(255,255,255,0.12)", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <Ico n="qr" s={16} c="#fff" />
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <span style={{ color: "#fff", fontSize: 15, fontWeight: 700, letterSpacing: "-0.3px", lineHeight: 1.2 }}>Verify Provider</span>
-            <span style={{ color: "rgba(255,255,255,0.65)", fontSize: 10, letterSpacing: "0.7px", textTransform: "uppercase" }}>QR VERIFICATION</span>
-          </div>
-        </div>
-
-        {/* Right: avatar */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(255,255,255,0.18)", border: "2px solid rgba(255,255,255,0.35)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 600 }}>AO</div>
-          <span style={{ color: "#fff", fontSize: 13, fontWeight: 500 }}>Asset Owner</span>
-        </div>
-      </nav>
-
-      {/* ── MAIN CONTENT ── */}
-      <div style={{ marginLeft: 240, marginTop: 60, padding: "40px 24px", background: "#F5F6FA", minHeight: "calc(100vh - 60px)", boxSizing: "border-box", display: "flex", justifyContent: "center" }}>
-        <div style={{ width: "100%", maxWidth: 640 }}>
+    <div style={{ padding: "40px 24px", display: "flex", justifyContent: "center", fontFamily: "'Inter', sans-serif" }}>
+      <div style={{ width: "100%", maxWidth: 640 }}>
 
           {currentStep === 1 ? (
             <>
@@ -128,48 +94,58 @@ function VerifyProvider() {
                     <span style={{ fontSize: 12.5, color: "#374151", fontWeight: 500 }}>Position the QR code within the frame to scan</span>
                   </div>
 
-                  <div onClick={() => setCameraOn(true)} style={{ padding: "32px 40px", display: "flex", justifyContent: "center", cursor: "pointer" }}>
-                    <div style={{ position: "relative", width: 240, height: 240, background: "#1a1a1a", borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid rgba(43,157,78,0.4)" }}>
-                      {[["0","0","border-top","border-left"],["auto","0","border-top","border-right"],["0","auto","border-bottom","border-left"],["auto","auto","border-bottom","border-right"]].map(([t,b,bt,bl], i) => (
-                        <div key={i} style={{ position: "absolute", top: t!=="auto"?10:"auto", bottom: b!=="auto"?10:"auto", left: bl==="border-left"?10:"auto", right: bl==="border-right"?10:"auto", width: 28, height: 28, [bt]: `3px solid #4fb96e`, [bl]: `3px solid #4fb96e`, borderRadius: bt==="border-top"&&bl==="border-left"?"4px 0 0 0":bt==="border-top"?"0 4px 0 0":bl==="border-left"?"0 0 0 4px":"0 0 4px 0" }} />
-                      ))}
-                      <style>{`@keyframes scanLine{0%{top:20px}100%{top:215px}}@keyframes pulse{0%,100%{opacity:0.6}50%{opacity:1}}`}</style>
-                      <div style={{ position: "absolute", left: 16, right: 16, height: 2, background: `linear-gradient(90deg, transparent, #4fb96e, transparent)`, animation: "scanLine 2s ease-in-out infinite", borderRadius: 1 }} />
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, opacity: 0.35 }}>
-                        {[...Array(4)].map((_, i) => (
-                          <div key={i} style={{ width: 52, height: 52, background: G, borderRadius: i < 3 ? 6 : 0, ...(i===3?{background:"transparent",display:"grid",gridTemplateColumns:"1fr 1fr",gap:4}:{}) }}>
-                            {i===3 && [...Array(4)].map((_,j)=>(<div key={j} style={{background:G,borderRadius:2}}/>))}
-                          </div>
-                        ))}
+                  <div style={{ padding: "32px 40px", display: "flex", justifyContent: "center" }}>
+                    {cameraOn ? (
+                      <div style={{ width: "100%" }}>
+                        <style>{`
+                          #reader { width: 100% !important; }
+                          #reader video { width: 100% !important; height: auto !important; display: block !important; border-radius: 12px; }
+                          #reader img { display: none !important; }
+                        `}</style>
+                        <div id="reader" style={{ width: "100%", minHeight: 300, borderRadius: 12, overflow: "hidden" }} />
                       </div>
-                    </div>
+                    ) : (
+                      <div onClick={() => setCameraOn(true)} style={{ position: "relative", width: 240, height: 240, background: "#1a1a1a", borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid rgba(43,157,78,0.4)", cursor: "pointer" }}>
+                        {[["0","0","border-top","border-left"],["auto","0","border-top","border-right"],["0","auto","border-bottom","border-left"],["auto","auto","border-bottom","border-right"]].map(([t,b,bt,bl], i) => (
+                          <div key={i} style={{ position: "absolute", top: t!=="auto"?10:"auto", bottom: b!=="auto"?10:"auto", left: bl==="border-left"?10:"auto", right: bl==="border-right"?10:"auto", width: 28, height: 28, [bt]: `3px solid #4fb96e`, [bl]: `3px solid #4fb96e`, borderRadius: bt==="border-top"&&bl==="border-left"?"4px 0 0 0":bt==="border-top"?"0 4px 0 0":bl==="border-left"?"0 0 0 4px":"0 0 4px 0" }} />
+                        ))}
+                        <style>{`@keyframes scanLine{0%{top:20px}100%{top:215px}}@keyframes pulse{0%,100%{opacity:0.6}50%{opacity:1}}`}</style>
+                        <div style={{ position: "absolute", left: 16, right: 16, height: 2, background: `linear-gradient(90deg, transparent, #4fb96e, transparent)`, animation: "scanLine 2s ease-in-out infinite", borderRadius: 1 }} />
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, opacity: 0.35 }}>
+                          {[...Array(4)].map((_, i) => (
+                            <div key={i} style={{ width: 52, height: 52, background: G, borderRadius: i < 3 ? 6 : 0, ...(i===3?{background:"transparent",display:"grid",gridTemplateColumns:"1fr 1fr",gap:4}:{}) }}>
+                              {i===3 && [...Array(4)].map((_,j)=>(<div key={j} style={{background:G,borderRadius:2}}/>))}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ padding: "0 32px 28px", display: "flex", flexDirection: "column", gap: 10 }}>
-                    <button onClick={() => setCameraOn(true)} style={{ width: "100%", padding: "13px 20px", background: G, color: "#fff", border: "none", borderRadius: 10, cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 14px rgba(43,157,78,0.3)", transition: "background 0.15s" }}
-                      onMouseEnter={e=>e.currentTarget.style.background=GD} onMouseLeave={e=>e.currentTarget.style.background=G}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                      Request Camera Permissions
-                    </button>
-                    <button onClick={() => fileInputRef.current.click()} style={{ width: "100%", padding: "12px 20px", background: "#fff", color: G, border: `1.5px solid rgba(43,157,78,0.3)`, borderRadius: 10, cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all 0.15s" }}
-                      onMouseEnter={e=>{e.currentTarget.style.background="rgba(43,157,78,0.05)";e.currentTarget.style.borderColor=G}} onMouseLeave={e=>{e.currentTarget.style.background="#fff";e.currentTarget.style.borderColor="rgba(43,157,78,0.3)"}}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                      Scan an Image File
-                    </button>
+                    {cameraOn ? (
+                      <button onClick={stopCamera} style={{ width: "100%", padding: "13px 20px", background: "#EF4444", color: "#fff", border: "none", borderRadius: 10, cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
+                        Close Camera
+                      </button>
+                    ) : (
+                      <>
+                        <button onClick={() => setCameraOn(true)} style={{ width: "100%", padding: "13px 20px", background: G, color: "#fff", border: "none", borderRadius: 10, cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 14px rgba(43,157,78,0.3)", transition: "background 0.15s" }}
+                          onMouseEnter={e=>e.currentTarget.style.background=GD} onMouseLeave={e=>e.currentTarget.style.background=G}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                          Request Camera Permissions
+                        </button>
+                        <button onClick={() => fileInputRef.current.click()} style={{ width: "100%", padding: "12px 20px", background: "#fff", color: G, border: `1.5px solid rgba(43,157,78,0.3)`, borderRadius: 10, cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all 0.15s" }}
+                          onMouseEnter={e=>{e.currentTarget.style.background="rgba(43,157,78,0.05)";e.currentTarget.style.borderColor=G}} onMouseLeave={e=>{e.currentTarget.style.background="#fff";e.currentTarget.style.borderColor="rgba(43,157,78,0.3)"}}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                          Scan an Image File
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
 
                 <div style={{ position: "absolute", inset: 0, borderRadius: 20, background: `radial-gradient(ellipse at 50% 100%, rgba(43,157,78,0.12), transparent 70%)`, pointerEvents: "none", zIndex: -1, filter: "blur(20px)", transform: "translateY(8px)" }} />
               </div>
-
-              {cameraOn && (
-                <div style={{ marginTop: 24, background: "#fff", borderRadius: 16, overflow: "hidden", border: `1px solid rgba(43,157,78,0.2)` }}>
-                  <div id="reader" style={{ width: "100%", minHeight: 300 }} />
-                  <div style={{ padding: "12px 20px" }}>
-                    <button onClick={stopCamera} style={{ background: "#EF4444", color: "#fff", border: "none", padding: "8px 18px", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 13, fontFamily: "'Inter', sans-serif" }}>Close Camera</button>
-                  </div>
-                </div>
-              )}
 
               {verifyError && (
                 <div style={{ marginTop: 16, padding: "12px 16px", background: "#fee2e2", color: "#991b1b", borderRadius: 10, fontSize: 13 }}>
@@ -203,7 +179,6 @@ function VerifyProvider() {
 
           <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} style={{ display: "none" }} />
         </div>
-      </div>
     </div>
   );
 }

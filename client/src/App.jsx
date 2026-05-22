@@ -107,9 +107,9 @@ export default function App() {
         <Route path="/provider/settings" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><OrganizationSettingsProvider /></DashboardLayout></RequireAuth>} />
 
         {/* Client Staff routes */}
-        <Route path="/compliance" element={<RequireAuth roles={["client_staff", "compliance_officer", "org_admin"]}><ComplianceOperations /></RequireAuth>} />
-        <Route path="/verify-provider" element={<RequireAuth roles={["client_staff", "compliance_officer", "org_admin"]}><VerifyProvider /></RequireAuth>} />
-        <Route path="/service-orders" element={<RequireAuth roles={["client_staff", "compliance_officer", "org_admin"]}><ServiceOrders /></RequireAuth>} />
+        <Route path="/compliance" element={<RequireAuth roles={["client_staff", "compliance_officer", "org_admin"]}><DashboardLayout><ComplianceOperations /></DashboardLayout></RequireAuth>} />
+        <Route path="/verify-provider" element={<RequireAuth roles={["client_staff", "compliance_officer", "org_admin"]}><DashboardLayout><VerifyProvider /></DashboardLayout></RequireAuth>} />
+        <Route path="/service-orders" element={<RequireAuth roles={["client_staff", "compliance_officer", "org_admin"]}><DashboardLayout><ServiceOrders /></DashboardLayout></RequireAuth>} />
 
         {/* Admin Dashboard */}
         <Route path="/admin-dashboard" element={<RequireAuth roles={["super_admin"]}><AdminDashboard /></RequireAuth>} />

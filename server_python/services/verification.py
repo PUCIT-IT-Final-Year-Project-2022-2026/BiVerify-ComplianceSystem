@@ -38,15 +38,18 @@ def verify_site_scan(*, site_token: str, request_id: str, user):
     if not sr:
         raise VerifyError("BOOKING_NOT_FOUND", "Booking not found", 404)
 
-    if sr.get("assignedStaffId") != user["_id"]:
+    if sr.get("assignedProviderStaffId") != user["_id"]:
         raise VerifyError("NOT_ASSIGNED", "This job is not assigned to you", 403)
 
     if sr.get("status") not in ("accepted", "in_progress", "pending"):
         raise VerifyError("BOOKING_NOT_FOUND", f"Booking is {sr.get('status')}", 409)
 
-    if sr.get("siteLocationId") != site["_id"]:
+    sr_site = sr.get("siteLocationId")
+    qr_site = site["_id"]
+    print(f"Verifying site scan: sr_site={sr_site}, qr_site={qr_site}")
+    if sr_site and sr_site != qr_site:
         raise VerifyError("LOCATION_MISMATCH", "Site QR does not match this booking's location", 409)
-
+    
     blocked, reason = is_provider_blocked(sr["providerOrgId"])
     if blocked:
         raise VerifyError("COMPLIANCE_EXPIRED", reason or "Provider compliance is not valid", 409)

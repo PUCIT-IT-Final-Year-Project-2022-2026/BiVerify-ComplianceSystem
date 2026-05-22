@@ -37,6 +37,7 @@ const SECTIONS = [
     items: [
       { to: "/Bookings", Icon: FaCalendarAlt,  label: "Service Bookings" },
       { to: "/vault",    Icon: FaFileAlt,       label: "Compliance Vault" },
+      { to: "/verify-provider",  Icon: FaQrcode,       label: "Verify Provider"           },
       { to: "/team",     Icon: FaUsers,         label: "My Team"          },
       { to: "/audit",     Icon: FaHistory,         label: "Audit Logs"          },
       { to: "/clientqr",  Icon: FaQrcode,          label: "ClientQR"            },
