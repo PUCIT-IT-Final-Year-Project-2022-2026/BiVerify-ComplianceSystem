@@ -579,6 +579,63 @@ export default function ServiceRequest() {
     setAutoFilled(true);
   }, []);
 
+  // When a saved site chip is clicked, auto-fill address fields + map pin
+  const handleSiteSelect = useCallback(async (site) => {
+    // Toggle off if already selected
+    if (selectedSite?.id === site.id) {
+      setSelectedSite(null);
+      return;
+    }
+    setSelectedSite(site);
+
+    // Use address string saved with site; fall back to label
+    const addressQuery = (site.address || site.label || "").trim();
+    if (!addressQuery) return;
+
+    // Immediately split the address string into fields so fields fill
+    // even if geocoding is slow or fails
+    const parts = addressQuery.split(",").map(p => p.trim()).filter(Boolean);
+    const quickAddr = {
+      streetNumber: "",
+      street:       parts[0] || "",
+      area:         parts[1] || "",
+      city:         parts[2] || "",
+      state:        parts[3] || "",
+      country:      parts[4] || "",
+      postcode:     parts[5] || "",
+      displayName:  addressQuery,
+    };
+    setAddr(quickAddr);
+    setAutoFilled(true);
+
+    // Now try to enrich via geocoding for accurate structured fields + map pin
+    try {
+      const results = await forwardGeocode(addressQuery);
+      if (results && results.length > 0) {
+        const hit = results[0];
+        const lat = parseFloat(hit.lat);
+        const lng = parseFloat(hit.lon);
+        setPin({ lat, lng });
+
+        const geoData = await reverseGeocode(lat, lng);
+        const a = geoData.address || {};
+        setAddr({
+          streetNumber: a.house_number || "",
+          street:       a.road || a.pedestrian || a.footway || "",
+          area:         a.suburb || a.neighbourhood || a.quarter || a.city_district || "",
+          city:         a.city || a.town || a.village || a.county || "",
+          state:        a.state || a.province || "",
+          country:      a.country || "",
+          postcode:     a.postcode || "",
+          displayName:  geoData.display_name || addressQuery,
+        });
+        setAutoFilled(true);
+      }
+    } catch {
+      // Geocoding failed — quick-fill from address string stays in place
+    }
+  }, [selectedSite]);
+
   const handlePinChange = useCallback((newPin) => {
     setPin(newPin);
     setAutoFilled(false); // reset — will be set again after reverse geocode
@@ -782,7 +839,7 @@ export default function ServiceRequest() {
                       {sites.map(site => (
                         <div key={site.id}
                           className={`map-site-chip ${selectedSite?.id === site.id ? "selected" : ""}`}
-                          onClick={() => setSelectedSite(selectedSite?.id === site.id ? null : site)}>
+                          onClick={() => handleSiteSelect(site)}>
                           {site.label}
                         </div>
                       ))}

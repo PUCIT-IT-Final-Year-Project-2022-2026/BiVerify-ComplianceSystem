@@ -156,7 +156,7 @@ def list_sites():
 
     return jsonify({
         "sites": [
-            {"id": str(s["_id"]), "label": s.get("label", "")}
+            {"id": str(s["_id"]), "label": s.get("label", ""), "address": s.get("address", "")}
             for s in sites
         ]
     })
