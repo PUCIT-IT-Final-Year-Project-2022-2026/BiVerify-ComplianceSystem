@@ -40,8 +40,6 @@ const css = `
   .nav-site  { background: ${C.dark}; border-radius: 20px; padding: 4px 12px; color: rgba(255,255,255,0.9); font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
   .pulse     { width: 6px; height: 6px; background: ${C.soft}; border-radius: 50%; animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.3)} }
-  .notif-btn { width: 34px; height: 34px; border-radius: 50%; background: ${C.dark}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; }
-  .notif-pip { position: absolute; top: 5px; right: 6px; width: 8px; height: 8px; background: ${C.warning}; border-radius: 50%; border: 2px solid ${C.primary}; }
   .nav-av    { width: 34px; height: 34px; border-radius: 50%; background: ${C.dark}; border: 2px solid rgba(255,255,255,0.35); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; }
   .nav-name  { color: #fff; font-size: 13px; font-weight: 500; }
 
@@ -209,7 +207,6 @@ const css = `
 const Ico = ({ n, s = 15, c = "currentColor" }) => {
   const d = {
     qr:      <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3" rx="0.5"/><rect x="18" y="14" width="3" height="3" rx="0.5"/><rect x="14" y="18" width="3" height="3" rx="0.5"/><rect x="18" y="18" width="3" height="3" rx="0.5"/></svg>,
-    bell:    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>,
     search:  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
     shield:  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
     doc:     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>,
@@ -260,12 +257,10 @@ export default function ComplianceVault() {
 
   // ── Fetch current user profile & active site on mount ────────────────────
   useEffect(() => {
-    // Refresh user data (picks up orgName which login now returns)
     auth.me()
       .then(res => {
         if (res?.user) {
           setCurrentUser(res.user);
-          // Keep localStorage in sync so other pages also benefit
           try {
             const stored = JSON.parse(localStorage.getItem("biverify_user") || "{}");
             localStorage.setItem("biverify_user", JSON.stringify({ ...stored, ...res.user }));
@@ -274,7 +269,6 @@ export default function ComplianceVault() {
       })
       .catch(() => { /* silent – use cached value */ });
 
-    // Fetch org's site locations and show the first active one
     api.get("/api/locations")
       .then(res => {
         const sites = res.data;
@@ -287,7 +281,6 @@ export default function ComplianceVault() {
   }, []);
 
   // ── Derived nav values ────────────────────────────────────────────────────
-  // orgName is now returned by the backend; fall back to fullName or email
   const navName = currentUser?.orgName || currentUser?.fullName || currentUser?.email || "My Org";
   const navInitials = navName
     .split(" ")
@@ -435,7 +428,6 @@ export default function ComplianceVault() {
           <div className="nav-div"/><span className="nav-pg">Compliance Vault</span>
         </div>
         <div className="nav-right">
-          {/* Site badge – real data from /api/locations */}
           {activeSite && (
             <div className="nav-site">
               <span className="pulse"/>
@@ -443,10 +435,6 @@ export default function ComplianceVault() {
               {activeSite}
             </div>
           )}
-          <button className="notif-btn">
-            <Ico n="bell" s={15} c="rgba(255,255,255,0.85)"/><span className="notif-pip"/>
-          </button>
-          {/* Profile icon – real logged-in user */}
           <div className="nav-av" title={navName}>{navInitials}</div>
           <span className="nav-name">{navName}</span>
         </div>

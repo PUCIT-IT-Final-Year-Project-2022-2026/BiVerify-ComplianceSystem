@@ -25,6 +25,10 @@ api.interceptors.response.use(
     return Promise.reject(err);
   }
 );
+export const auditLogs = {
+  list: (params = {}) =>
+    api.get('/api/audit-logs', { params }).then((r) => r.data),
+};
 
 export const auth = {
   login: (email, password) =>

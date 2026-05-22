@@ -40,25 +40,6 @@ const css = `
   .pulse     { width: 6px; height: 6px; background: ${C.soft}; border-radius: 50%; animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.3)} }
 
-  /* FIXED notif button:
-     - overflow:visible  → pip dot isn't clipped by border-radius
-     - color:#fff        → currentColor resolves to white for SVG stroke
-  */
-  .notif-btn {
-    width: 34px; height: 34px; border-radius: 50%;
-    background: ${C.dark}; border: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    position: relative; overflow: visible; color: #fff;
-  }
-  .notif-btn svg { display: block; flex-shrink: 0; }
-  .notif-pip {
-    position: absolute; top: 1px; right: 1px;
-    width: 9px; height: 9px;
-    background: ${C.warning}; border-radius: 50%;
-    border: 2px solid ${C.primary};
-    pointer-events: none; z-index: 2;
-  }
-
   .nav-av    { width: 34px; height: 34px; border-radius: 50%; background: ${C.dark}; border: 2px solid rgba(255,255,255,0.35); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; }
   .nav-name  { color: #fff; font-size: 13px; font-weight: 500; }
 
@@ -192,29 +173,9 @@ const css = `
   ::-webkit-scrollbar-thumb { background: ${C.soft}; border-radius: 4px; }
 `;
 
-// Bell SVG extracted as its own component so it always renders with explicit
-// white stroke — not dependent on currentColor inheritance from the button.
-const BellIcon = ({ size = 18 }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="#ffffff"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    style={{ display: "block", flexShrink: 0 }}
-  >
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-  </svg>
-);
-
 const Ico = ({ n, s = 15, c = "currentColor" }) => {
   const d = {
     qr:       <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3" rx="0.5"/><rect x="18" y="14" width="3" height="3" rx="0.5"/><rect x="14" y="18" width="3" height="3" rx="0.5"/><rect x="18" y="18" width="3" height="3" rx="0.5"/></svg>,
-    bell:     <BellIcon size={s} />,
     back:     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>,
     check:    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
     booking:  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
@@ -379,11 +340,6 @@ export default function PartnerProfile({ connectionId, onBack }) {
         </div>
         <div className="nav-right">
           <div className="nav-site"><span className="pulse"/>Live</div>
-          {/* Bell rendered via dedicated BellIcon — hardcoded white stroke, not currentColor */}
-          <button className="notif-btn" aria-label="Notifications">
-            <BellIcon size={17} />
-            <span className="notif-pip"/>
-          </button>
         </div>
       </nav>
 

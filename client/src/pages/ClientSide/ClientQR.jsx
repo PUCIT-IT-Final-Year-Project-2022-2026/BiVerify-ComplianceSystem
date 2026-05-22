@@ -6,7 +6,6 @@ import { locations, apiErrorMessage, getUser } from '../../api/client';
 // ── Icons Helper ──
 const Ico = ({ n, s = 15, c = "#fff" }) => {
   const icons = {
-    bell:   <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>,
     qrcode: <QrCode size={s} color={c} />,
   };
   return icons[n] || null;
@@ -15,7 +14,7 @@ const Ico = ({ n, s = 15, c = "#fff" }) => {
 // ── Top Navbar Style ──
 const TopNavbar = ({ title, icon }) => {
   const user = getUser();
-  const G = "#2b9d4e";   
+  const G = "#2b9d4e";
   return (
     <nav style={{
       width: "calc(100% - 240px)", height: 60, background: G, padding: "0 28px",
@@ -33,10 +32,6 @@ const TopNavbar = ({ title, icon }) => {
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <button style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-          <Ico n="bell" s={15} />
-          <span style={{ position: "absolute", top: 5, right: 6, width: 8, height: 8, background: "#F59E0B", borderRadius: "50%", border: `2px solid ${G}` }} />
-        </button>
         <div style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(255,255,255,0.18)", border: "2px solid rgba(255,255,255,0.35)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 600 }}>
           {user?.fullName?.substring(0,2).toUpperCase() || "AC"}
         </div>

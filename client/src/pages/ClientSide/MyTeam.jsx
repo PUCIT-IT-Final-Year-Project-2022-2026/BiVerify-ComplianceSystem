@@ -12,21 +12,6 @@ const ROLE_LABEL = {
   org_admin:          'Org Admin',
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  Bell icon — hardcoded white stroke so it always renders
-// ─────────────────────────────────────────────────────────────────────────────
-const BellIcon = () => (
-  <svg
-    width="17" height="17" viewBox="0 0 24 24"
-    fill="none" stroke="#ffffff" strokeWidth="2"
-    strokeLinecap="round" strokeLinejoin="round"
-    style={{ display: 'block', flexShrink: 0 }}
-  >
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-  </svg>
-);
-
 // Users icon for the nav
 const UsersNavIcon = () => (
   <svg
@@ -78,30 +63,8 @@ const TopNavbar = ({ title, navInfo, loadingNav }) => {
         </div>
       </div>
 
-      {/* Right: bell + avatar + org name */}
+      {/* Right: avatar + org name */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-
-        {/* Notification bell */}
-        <button
-          aria-label="Notifications"
-          style={{
-            width: 34, height: 34, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.12)',
-            border: '1px solid rgba(255,255,255,0.2)',
-            cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            position: 'relative', padding: 0,
-            overflow: 'visible', flexShrink: 0,
-          }}
-        >
-          <BellIcon />
-          <span style={{
-            position: 'absolute', top: 4, right: 4,
-            width: 8, height: 8, background: '#F59E0B',
-            borderRadius: '50%', border: `2px solid ${G}`,
-            pointerEvents: 'none',
-          }}/>
-        </button>
 
         {/* Avatar — initials from real org name */}
         <div style={{

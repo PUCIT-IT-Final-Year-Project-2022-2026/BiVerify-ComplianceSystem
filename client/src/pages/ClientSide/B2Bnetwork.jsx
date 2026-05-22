@@ -242,22 +242,7 @@ const css = `
 `;
 
 // ── Bell icon rendered inline (not via Ico component) so it's guaranteed to show ──
-const BellIcon = () => (
-  <svg
-    width="17"
-    height="17"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="#ffffff"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    style={{ display: "block", flexShrink: 0 }}
-  >
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-  </svg>
-);
+
 
 const Ico = ({ n, s = 16, c = C.primary }) => {
   const d = {
@@ -499,13 +484,7 @@ export default function B2BNetwork() {
         <div className="topnav-right">
           <div className="topnav-site"><span className="pulse-dot"/>Live</div>
 
-          {/* ── Notification bell — fixed ── */}
-          <div className="notif-wrap">
-            <button className="notif-btn" aria-label="Notifications">
-              <BellIcon />
-              {received.length > 0 && <span className="notif-pip"/>}
-            </button>
-          </div>
+      
         </div>
       </nav>
 

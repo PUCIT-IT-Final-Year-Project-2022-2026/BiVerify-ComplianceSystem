@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, g
 from db import get_db
 from auth import require_role
 from services.verification import verify_site_scan, verify_booking_scan, VerifyError
-from audit import write_audit
+from utils.audit import write_audit
 
 bp = Blueprint("scan", __name__, url_prefix="/api/scan")
 

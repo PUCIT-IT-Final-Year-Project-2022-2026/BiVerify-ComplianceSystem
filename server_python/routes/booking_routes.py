@@ -8,7 +8,7 @@ from flask import Blueprint, request, jsonify, g, Response
 from db import get_db
 from auth import require_role, require_auth
 from qr import generate_token, make_qr_png, make_qr_data_url
-from audit import write_audit
+from utils.audit import write_audit
 from services.compliance import is_provider_blocked
 
 bp = Blueprint("bookings", __name__, url_prefix="/api/bookings")

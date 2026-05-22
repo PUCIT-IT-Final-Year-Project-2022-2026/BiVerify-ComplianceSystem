@@ -4,7 +4,7 @@ from bson import ObjectId
 from bson.errors import InvalidId
 from flask import Blueprint, g, jsonify, request
 
-from audit import write_audit
+from utils.audit import write_audit
 from auth import require_role
 from db import get_db
 

@@ -1,20 +1,23 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './SystemAuditLogs.css';
+import { getUser, auditLogs as auditApi, apiErrorMessage } from '../../api/client';
 
 // ── Icons Helper ──
 const Ico = ({ n, s = 15, c = "#fff" }) => {
   const icons = {
-    bell:    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>,
     history: <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>,
     logs:    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>,
   };
   return icons[n] || null;
 };
 
-// ── Top Navbar Style ──
+// ── Top Navbar ──
 const TopNavbar = ({ title, icon }) => {
-  const G = "#2b9d4e";   
-  const GD = "#1f7a3b";  
+  const G = "#2b9d4e";
+  const user = getUser();
+  const navName     = user?.orgName || user?.fullName || user?.email || 'Asset Owner';
+  const navInitials = navName.split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'AO';
+
   return (
     <nav style={{
       width: "calc(100% - 240px)", height: 60, background: G, padding: "0 28px",
@@ -32,38 +35,39 @@ const TopNavbar = ({ title, icon }) => {
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <button style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-          <Ico n="bell" s={15} />
-          <span style={{ position: "absolute", top: 5, right: 6, width: 8, height: 8, background: "#F59E0B", borderRadius: "50%", border: `2px solid ${G}` }} />
-        </button>
-        <div style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(255,255,255,0.18)", border: "2px solid rgba(255,255,255,0.35)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 600 }}>AO</div>
-        <span style={{ color: "#fff", fontSize: 13, fontWeight: 500 }}>Asset Owner</span>
+        <div style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(255,255,255,0.18)", border: "2px solid rgba(255,255,255,0.35)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 600 }}>
+          {navInitials}
+        </div>
+        <span style={{ color: "#fff", fontSize: 13, fontWeight: 500 }}>{navName}</span>
       </div>
     </nav>
   );
 };
 
 export default function SystemAuditLogs() {
-  const logs = [
-    { id: 1, time: '3/3/2026, 1:06:24 PM', user: 'Asset Owner', action: 'CREATE_CLIENT', details: 'Admin created a new Client: Sarah (sarah@example.com)' },
-    { id: 2, time: '3/3/2026, 1:15:10 PM', user: 'Asset Owner', action: 'UPDATE_ORG', details: 'Organization site URL updated to https://biverify.com' },
-    { id: 3, time: '3/3/2026, 2:30:45 PM', user: 'Sarah', action: 'LOGIN', details: 'User sarah@example.com logged in' },
-    { id: 4, time: '3/3/2026, 3:00:12 PM', user: 'Asset Owner', action: 'ADD_TEAM', details: 'New team member added: John Doe' },
-    { id: 5, time: '3/4/2026, 9:20:15 AM', user: 'John Doe', action: 'UPDATE_DOC', details: 'Security certification document uploaded: cert_v2.pdf' },
-    { id: 6, time: '3/4/2026, 10:45:30 AM', user: 'Asset Owner', action: 'DELETE_FILE', details: 'Old compliance report deleted: report_2025.pdf' },
-    { id: 7, time: '3/4/2026, 2:15:55 PM', user: 'Jessica Chen', action: 'EDIT_PROFILE', details: 'User updated profile contact information' },
-    { id: 8, time: '3/5/2026, 8:10:00 AM', user: 'System', action: 'BACKUP', details: 'Automated database backup completed successfully' },
-    { id: 9, time: '3/5/2026, 11:30:42 AM', user: 'Asset Owner', action: 'INVITE_USER', details: 'New invitation sent to robert@example.com' },
-    { id: 10, time: '3/5/2026, 4:55:12 PM', user: 'Robert Wilson', action: 'JOIN_TEAM', details: 'Robert Wilson accepted the invitation and joined the team' },
-    { id: 11, time: '3/6/2026, 10:05:33 AM', user: 'Asset Owner', action: 'CHANGE_PWD', details: 'Admin password successfully changed' },
-    { id: 12, time: '3/6/2026, 1:22:45 PM', user: 'System', action: 'SECURITY_ALERT', details: 'Multiple failed login attempts detected from IP 192.168.1.5' }
-  ];
+  const [logs,    setLogs]    = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState('');
+
+  useEffect(() => {
+    auditApi.list({ limit: 50 })
+      .then(data  => setLogs(data.logs || []))
+      .catch(err  => setError(apiErrorMessage(err)))
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div style={{ minHeight: '100vh', background: '#f0fdf4' }}>
       <TopNavbar title="System Audit Logs" icon="history" />
       <main style={{ marginTop: 60, padding: '32px', boxSizing: 'border-box' }}>
         <div className="logs-container" style={{ padding: 0, maxWidth: 'none', margin: 0 }}>
+
+          {error && (
+            <div style={{ background: '#fee2e2', color: '#991b1b', padding: '12px 16px', borderRadius: 8, marginBottom: 16, fontSize: 13 }}>
+              {error}
+            </div>
+          )}
+
           <div className="logs-table-wrapper">
             <div className="logs-table-header">
               <div className="col-time">Time</div>
@@ -72,18 +76,35 @@ export default function SystemAuditLogs() {
               <div className="col-details">Details</div>
             </div>
             <div className="logs-table-body">
-              {logs.map((log) => (
-                <div className="logs-table-row" key={log.id}>
-                  <div className="col-time">{log.time}</div>
-                  <div className="col-user">{log.user}</div>
-                  <div className="col-action">
-                    <span className={`action-badge ${log.action.toLowerCase()}`}>
-                      {log.action}
-                    </span>
+
+              {loading ? (
+                [0,1,2,3,4].map(i => (
+                  <div className="logs-table-row" key={i} style={{ opacity: 0.4 }}>
+                    <div className="col-time"    style={{ background: '#e5e7eb', borderRadius: 4, color: 'transparent' }}>Loading...</div>
+                    <div className="col-user"    style={{ background: '#e5e7eb', borderRadius: 4, color: 'transparent' }}>User</div>
+                    <div className="col-action"><span className="action-badge" style={{ background: '#e5e7eb', color: 'transparent' }}>ACTION</span></div>
+                    <div className="col-details" style={{ background: '#e5e7eb', borderRadius: 4, color: 'transparent' }}>Details here</div>
                   </div>
-                  <div className="col-details">{log.details}</div>
+                ))
+              ) : logs.length === 0 ? (
+                <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>
+                  No audit logs found.
                 </div>
-              ))}
+              ) : (
+                logs.map((log) => (
+                  <div className="logs-table-row" key={log.id}>
+                    <div className="col-time">{log.time}</div>
+                    <div className="col-user">{log.user}</div>
+                    <div className="col-action">
+                      <span className={`action-badge ${log.action.toLowerCase()}`}>
+                        {log.action}
+                      </span>
+                    </div>
+                    <div className="col-details">{log.details}</div>
+                  </div>
+                ))
+              )}
+
             </div>
           </div>
         </div>

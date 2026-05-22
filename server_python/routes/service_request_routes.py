@@ -23,7 +23,7 @@ from flask import Blueprint, request, jsonify, g
 from db import get_db
 from auth import require_role
 from qr import generate_token, make_qr_data_url
-from audit import write_audit
+from utils.audit import write_audit
 from services.compliance import is_provider_blocked
 
 bp = Blueprint("service_request", __name__, url_prefix="/api/service-request")
