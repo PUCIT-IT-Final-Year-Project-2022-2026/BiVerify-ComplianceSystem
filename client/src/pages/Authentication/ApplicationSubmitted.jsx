@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 const style = `
   @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap');
@@ -189,6 +190,8 @@ const style = `
 
 export default function ApplicationSubmitted() {
   const [mounted, setMounted] = useState(false);
+  const { state } = useLocation();
+  const orgName = state?.orgName || "your organization";
   useEffect(() => { setMounted(true); }, []);
 
   return (
@@ -213,7 +216,7 @@ export default function ApplicationSubmitted() {
           <h1 className="as-title">Application Submitted</h1>
 
           <p className="as-subtitle">
-            Thank you for registering <strong>goodme</strong>. Your provider account is
+            Thank you for registering <strong>{orgName}</strong>. Your account is
             currently pending review by our compliance team.
           </p>
 

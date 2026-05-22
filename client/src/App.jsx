@@ -9,6 +9,7 @@ import LandingPage from "./pages/Landing/LandingPage.jsx";
 import LoginPage from "./pages/Authentication/LoginPage";
 import SignupPage from "./pages/Authentication/SignupPage";
 import ForgotPassword from "./pages/Authentication/ForgotPassword";
+import ApplicationSubmitted from "./pages/Authentication/ApplicationSubmitted";
 
 import ClientDashboard from "./pages/ClientSide/ClientDashboard.jsx";
 import B2BNetwork from "./pages/ClientSide/B2BNetwork.jsx";
@@ -80,7 +81,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-
+        <Route path="/application-submitted" element={<ApplicationSubmitted />} />
         {/* ── Client Org Admin Routes ── */}
         <Route path="/overview" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><ClientDashboard /></DashboardLayout></RequireAuth>} />
         <Route path="/network" element={<RequireAuth roles={["org_admin"]}><DashboardLayout><B2BNetwork /></DashboardLayout></RequireAuth>} />

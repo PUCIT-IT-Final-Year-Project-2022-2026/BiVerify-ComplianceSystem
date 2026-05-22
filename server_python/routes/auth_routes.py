@@ -53,6 +53,12 @@ def login():
     if user.get("isActive") is False:
         return _err("UNAUTHORIZED", "User is inactive", 401)
 
+    org = db.organizations.find_one({"_id": user["orgId"]}, {"status": 1})
+    if org and org.get("status") == "pending":
+        return _err("PENDING_APPROVAL", "Organization registration is pending approval", 403)
+    if org and org.get("status") == "rejected":
+        return _err("ORG_REJECTED", "Organization registration was rejected", 403)
+    
     db.users.update_one({"_id": user["_id"]}, {"$set": {"lastLoginAt": datetime.now()}})
     token = issue_token(user["_id"], user["role"], user["orgId"])
     write_audit(
@@ -117,8 +123,11 @@ def register_org():
         description=f"Org self-registered: {data['orgName']}",
     )
 
-    token = issue_token(user_id, "org_admin", org_id)
-    return jsonify({"token": token, "user": _user_public(user_doc)}), 201
+    return jsonify({
+        "success": True,
+        "orgName": data["orgName"],
+        "message": "Registration submitted. Awaiting superadmin approval."
+    }), 201
 
 
 # ─────────────────────────────────────────────────────────

@@ -150,9 +150,7 @@ const SignupPage = () => {
                 serviceType: formData.serviceType || '',
             };
             const { data } = await api.post('/api/auth/register-org', payload);
-            saveSession(data.token, data.user);
-            // Org self-signups land on org_admin dashboard
-            navigate(role === 'provider' ? '/provider/overview' : '/overview', { replace: true });
+            navigate('/application-submitted', { state: { orgName: data.orgName } });
         } catch (err) {
             alert(`Signup failed: ${apiErrorMessage(err)}`);
         }
