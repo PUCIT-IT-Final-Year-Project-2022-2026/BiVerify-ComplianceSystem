@@ -21,6 +21,11 @@ api.interceptors.response.use(
     if (err.response?.status === 401) {
       localStorage.removeItem("biverify_token");
       localStorage.removeItem("biverify_user");
+      // Redirect to login so protected pages (e.g. ComplianceVault download)
+      // don't silently fail — they land on the login page instead.
+      if (!window.location.pathname.startsWith("/login")) {
+        window.location.assign("/login");
+      }
     }
     return Promise.reject(err);
   }
@@ -161,6 +166,15 @@ export const clientSettings = {
     api.patch("/api/client/settings/profile", payload).then((r) => r.data),
   changePassword: (currentPassword, newPassword) =>
     api.patch("/api/client/settings/password", { currentPassword, newPassword }).then((r) => r.data),
+};
+
+// ── PROVIDER SETTINGS ─────────────────────────────────────────────────────────
+
+export const providerSettings = {
+  getProfile: () =>
+    api.get("/api/provider/settings/profile").then((r) => r.data),
+  updateProfile: (payload) =>
+    api.patch("/api/provider/settings/profile", payload).then((r) => r.data),
 };
 
 // ── SESSION HELPERS ───────────────────────────────────────────────────────────

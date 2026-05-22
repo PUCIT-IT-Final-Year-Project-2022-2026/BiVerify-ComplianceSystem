@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Settings, Save, Clock, Globe } from 'lucide-react';
 import './OrganizationSettings.css';
+import { providerSettings } from '../../api/client';
 
 // ── Icons Helper ──
 const Ico = ({ n, s = 15, c = "#fff" }) => {
@@ -13,7 +14,7 @@ const Ico = ({ n, s = 15, c = "#fff" }) => {
 
 // ── Top Navbar Style ──
 const TopNavbar = ({ title, icon }) => {
-  const G = "#2b9d4e";   
+  const G = "#2b9d4e";
   return (
     <nav style={{
       width: "calc(100% - 240px)", height: 60, background: G, padding: "0 28px",
@@ -42,48 +43,148 @@ const TopNavbar = ({ title, icon }) => {
   );
 };
 
-export default function OrganizationSettings() {
-  const [orgName, setOrgName] = useState('');
-  const [email, setEmail] = useState('');
-  const [websiteUrl, setWebsiteUrl] = useState('');
-  const [timezone, setTimezone] = useState('UTC (Universal Coordinated Time)');
-  const [currency, setCurrency] = useState('USD ($)');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Settings saved');
+export default function OrganizationSettings() {
+  const [orgName, setOrgName]       = useState('');
+  const [email, setEmail]           = useState('');
+  const [websiteUrl, setWebsiteUrl] = useState('');
+  const [timezone, setTimezone]     = useState('UTC (Universal Coordinated Time)');
+  const [currency, setCurrency]     = useState('USD ($)');
+
+  const [loading, setLoading]   = useState(true);
+  const [saving, setSaving]     = useState(false);
+  const [toast, setToast]       = useState(null);  // { msg, type }
+
+  // ── Load existing settings on mount ────────────────────────────────────────
+  useEffect(() => {
+    providerSettings.getProfile()
+      .then(({ profile }) => {
+        setOrgName(profile.orgName   || '');
+        setEmail(profile.email       || '');
+        setWebsiteUrl(profile.websiteUrl || '');
+        setTimezone(profile.timezone || 'UTC (Universal Coordinated Time)');
+        setCurrency(profile.currency || 'USD ($)');
+      })
+      .catch((err) => showToast(err.message || "Failed to load settings", "error"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3500);
   };
+
+  // ── Save handler ────────────────────────────────────────────────────────────
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await providerSettings.updateProfile({
+        orgName,
+        email,
+        websiteUrl,
+        timezone,
+        currency,
+      });
+      showToast("Settings saved successfully");
+    } catch (err) {
+      showToast(err.message || "Failed to save settings", "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const G = "#2b9d4e";
 
   return (
     <div style={{ minHeight: '100vh', background: '#f0fdf4' }}>
       <TopNavbar title="Organization Settings" icon="settings" />
+
+      {/* Toast notification */}
+      {toast && (
+        <div style={{
+          position: "fixed", top: 20, right: 24, zIndex: 999,
+          background: toast.type === "success" ? "#ecfdf5" : "#fef2f2",
+          border: `1px solid ${toast.type === "success" ? "#6ee7b7" : "#fca5a5"}`,
+          color: toast.type === "success" ? "#065f46" : "#991b1b",
+          padding: "12px 20px", borderRadius: 12, fontSize: 13.5,
+          fontWeight: 600, boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
+        }}>
+          {toast.msg}
+        </div>
+      )}
+
       <main style={{ marginTop: 60, padding: '32px', boxSizing: 'border-box' }}>
-        <div className="settings-wrapper" style={{ padding: 0, maxWidth: 'none', margin: 0 }}>
-          <div className="settings-container" style={{ margin: 0, padding: 0, maxWidth: 'none' }}>
-            <div className="settings-card" style={{ width: '100%', maxWidth: '1100px', margin: '0 auto' }}>
-              <form onSubmit={handleSubmit}>
-                <div className="form-section">
-                  <h2 className="section-title">Branding & Identity</h2>
-                  <div className="section-divider"></div>
-                  <div className="form-grid">
-                    <div className="form-group"><label className="form-label">Organization Name</label><input type="text" value={orgName} onChange={(e) => setOrgName(e.target.value)} className="input-field" placeholder="spark" /></div>
-                    <div className="form-group"><label className="form-label">Email</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="input-field" placeholder="spark@example.com" /></div>
+        {loading ? (
+          <div style={{ textAlign: "center", color: "#6b7280", paddingTop: 60 }}>Loading settings…</div>
+        ) : (
+          <div className="settings-wrapper" style={{ padding: 0, maxWidth: 'none', margin: 0 }}>
+            <div className="settings-container" style={{ margin: 0, padding: 0, maxWidth: 'none' }}>
+              <div className="settings-card" style={{ width: '100%', maxWidth: '1100px', margin: '0 auto' }}>
+                <form onSubmit={handleSubmit}>
+                  <div className="form-section">
+                    <h2 className="section-title">Branding &amp; Identity</h2>
+                    <div className="section-divider"></div>
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label className="form-label">Organization Name</label>
+                        <input type="text" value={orgName} onChange={(e) => setOrgName(e.target.value)} className="input-field" placeholder="e.g. Acme Corp" />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Email</label>
+                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="input-field" placeholder="admin@example.com" />
+                      </div>
+                    </div>
+                    <div className="form-grid" style={{ marginTop: '32px' }}>
+                      <div className="form-group">
+                        <label className="form-label">Website URL</label>
+                        <input type="url" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} className="input-field" placeholder="https://" />
+                      </div>
+                    </div>
                   </div>
-                  <div className="form-grid" style={{ marginTop: '32px' }}><div className="form-group"><label className="form-label">Website URL</label><input type="url" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} className="input-field" placeholder="https://" /></div></div>
-                </div>
-                <div className="form-section localization-section">
-                  <h2 className="section-title">Localization</h2>
-                  <div className="section-divider"></div>
-                  <div className="form-grid">
-                    <div className="form-group"><label className="form-label icon-label"><Clock size={16} />Timezone</label><select className="select-field" value={timezone} onChange={(e) => setTimezone(e.target.value)}><option value="UTC (Universal Coordinated Time)">UTC (Universal Coordinated Time)</option><option value="EST (Eastern Standard Time)">EST (Eastern Standard Time)</option><option value="PST (Pacific Standard Time)">PST (Pacific Standard Time)</option></select></div>
-                    <div className="form-group"><label className="form-label icon-label"><Globe size={16} />Currency</label><select className="select-field" value={currency} onChange={(e) => setCurrency(e.target.value)}><option value="USD ($)">USD ($)</option><option value="EUR (€)">EUR (€)</option><option value="GBP (£)">GBP (£)</option></select></div>
+
+                  <div className="form-section localization-section">
+                    <h2 className="section-title">Localization</h2>
+                    <div className="section-divider"></div>
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label className="form-label icon-label"><Clock size={16} />Timezone</label>
+                        <select className="select-field" value={timezone} onChange={(e) => setTimezone(e.target.value)}>
+                          <option value="UTC (Universal Coordinated Time)">UTC (Universal Coordinated Time)</option>
+                          <option value="EST (Eastern Standard Time)">EST (Eastern Standard Time)</option>
+                          <option value="PST (Pacific Standard Time)">PST (Pacific Standard Time)</option>
+                          <option value="PKT (Pakistan Standard Time)">PKT (Pakistan Standard Time)</option>
+                          <option value="IST (India Standard Time)">IST (India Standard Time)</option>
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label icon-label"><Globe size={16} />Currency</label>
+                        <select className="select-field" value={currency} onChange={(e) => setCurrency(e.target.value)}>
+                          <option value="USD ($)">USD ($)</option>
+                          <option value="EUR (€)">EUR (€)</option>
+                          <option value="GBP (£)">GBP (£)</option>
+                          <option value="PKR (₨)">PKR (₨)</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="form-footer"><button type="submit" className="btn-save"><Save size={18} />Save Settings</button></div>
-              </form>
+
+                  <div className="form-footer">
+                    <button
+                      type="submit"
+                      className="btn-save"
+                      disabled={saving}
+                      style={{ opacity: saving ? 0.7 : 1, cursor: saving ? "not-allowed" : "pointer" }}
+                    >
+                      <Save size={18} />
+                      {saving ? "Saving…" : "Save Settings"}
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );

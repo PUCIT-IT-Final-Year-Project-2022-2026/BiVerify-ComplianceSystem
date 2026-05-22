@@ -1,4 +1,5 @@
-from flask import Flask, jsonify, request
+import os
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from config import Config
 from routes.auth_routes import bp as auth_bp
@@ -17,8 +18,9 @@ from routes.client_dashboard_routes import bp as client_dashboard_bp
 from routes.compliance_routes import bp as provider_compliance_bp
 from routes.client_settings_routes import bp as client_settings_bp
 from routes.audit_routes import bp as audit_bp
-
-from routes.provider_compliance_documents_routes import bp as provider_comp_docs_bp   # ← NEW
+from routes.provider_compliance_documents_routes import bp as provider_comp_docs_bp
+from routes.provider_settings_routes import bp as provider_settings_bp   # ← NEW
+from routes.file_upload_routes import bp as file_upload_bp               # ← NEW
 
 
 def create_app():
@@ -46,6 +48,16 @@ def create_app():
             response.headers["Access-Control-Max-Age"] = "600"
             return response
 
+    # ── Serve uploaded files ──────────────────────────────────────────────────
+    # Files saved by file_upload_routes.py are accessible at /uploads/<filename>
+    # In production, replace this with a CDN / S3 signed URL instead.
+    UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+    @app.route("/uploads/<path:filename>")
+    def serve_upload(filename):
+        return send_from_directory(UPLOAD_FOLDER, filename)
+
     # ── Blueprints ────────────────────────────────────────────────────────────
     app.register_blueprint(auth_bp)
     app.register_blueprint(location_bp)
@@ -63,7 +75,9 @@ def create_app():
     app.register_blueprint(provider_compliance_bp)
     app.register_blueprint(client_settings_bp)
     app.register_blueprint(audit_bp)
-    app.register_blueprint(provider_comp_docs_bp)          # ← NEW
+    app.register_blueprint(provider_comp_docs_bp)
+    app.register_blueprint(provider_settings_bp)   # ← NEW
+    app.register_blueprint(file_upload_bp)         # ← NEW
 
     @app.get("/api/health")
     def health():

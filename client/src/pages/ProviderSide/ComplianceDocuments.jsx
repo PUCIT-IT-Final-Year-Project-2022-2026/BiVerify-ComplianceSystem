@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { providerCompliance, getUser } from "../../api/client";
+import { API_BASE } from "../../api/client";
 
 const G  = "#2b9d4e";
 const BG = "#F0F2F5";
@@ -247,8 +248,13 @@ export default function ComplianceDocuments() {
     try {
       const data = await providerCompliance.downloadUrl(id);
       if (data.url) {
+        // Prefix relative paths with API_BASE so the file is fetched from
+        // Flask (port 5050), not the Vite dev server (which would redirect to /login).
+        const fullUrl = data.url.startsWith("http")
+          ? data.url
+          : `${API_BASE}${data.url}`;
         const a = document.createElement("a");
-        a.href = data.url;
+        a.href = fullUrl;
         a.download = data.fileName || name;
         a.target = "_blank";
         a.rel = "noopener noreferrer";
@@ -289,27 +295,38 @@ export default function ComplianceDocuments() {
 
     setSubmitting(true);
     try {
-      // In a real environment, you would upload the file to S3/cloud storage first,
-      // then send the resulting URL to the backend.
-      // For now, we use the file name as a placeholder URL (dev mode).
-      // Replace this block with your actual file upload logic (e.g. pre-signed S3 upload).
-      const fileUrl = `uploads/${Date.now()}_${formFile.name}`;
+      // ── Step 1: Upload the actual file via multipart/form-data ──
+      const formData = new FormData();
+      formData.append("file", formFile);
 
+      const token = localStorage.getItem("biverify_token");
+      const uploadRes = await fetch(`${API_BASE}/api/provider/compliance/upload`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      if (!uploadRes.ok) {
+        const errJson = await uploadRes.json().catch(() => ({}));
+        throw new Error(errJson?.error?.message || "File upload failed");
+      }
+
+      const { fileUrl, fileName: savedFileName } = await uploadRes.json();
+
+      // ── Step 2: Save document metadata with the real file URL ──
       const payload = {
         label:      formLabel.trim(),
         type:       formType,
-        fileName:   formFile.name,
+        fileName:   savedFileName || formFile.name,
         fileUrl:    fileUrl,
         fileSize:   formFile.size,
         expiryDate: formExpiry || null,
       };
 
       if (reuploadFor) {
-        // Re-uploading a rejected document — PATCH existing
         await providerCompliance.update(reuploadFor, payload);
         showToast("Document re-uploaded and sent for review");
       } else {
-        // New document — POST
         await providerCompliance.create(payload);
         showToast("Document uploaded successfully");
       }
@@ -318,7 +335,7 @@ export default function ComplianceDocuments() {
       fetchStats();
       fetchDocs(page, filter, search);
     } catch (err) {
-      const msg = err?.response?.data?.error?.message || "Upload failed. Please try again.";
+      const msg = err?.message || err?.response?.data?.error?.message || "Upload failed. Please try again.";
       showToast(msg, "error");
     } finally {
       setSubmitting(false);
