@@ -23,16 +23,20 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [errorCode, setErrorCode] = useState('');
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setErrorCode('');
     setSubmitting(true);
     try {
       const { token, user } = await auth.login(email.trim(), password);
       saveSession(token, user);
       navigate(getRoleHome(user), { replace: true });
     } catch (err) {
+      const code = err?.response?.data?.error?.code || '';
+      setErrorCode(code);
       setError(apiErrorMessage(err));
     } finally {
       setSubmitting(false);
@@ -94,7 +98,17 @@ export default function LoginPage() {
                   </a>
                 </div>
 
-                {error && (
+                {error && errorCode === 'PENDING_APPROVAL' && (
+                  <div style={{ marginBottom: 16, padding: '12px 14px', background: '#fffbeb', border: '1px solid #f59e0b', color: '#92400e', borderRadius: 8, fontSize: 13 }}>
+                    <strong>Awaiting approval</strong> — your organization has been registered and is pending super admin review. You will be able to log in once approved.
+                  </div>
+                )}
+                {error && errorCode === 'ORG_REJECTED' && (
+                  <div style={{ marginBottom: 16, padding: '12px 14px', background: '#fef2f2', border: '1px solid #f87171', color: '#991b1b', borderRadius: 8, fontSize: 13 }}>
+                    <strong>Registration rejected</strong> — your organization's registration was not approved. Please contact support for more information.
+                  </div>
+                )}
+                {error && errorCode !== 'PENDING_APPROVAL' && errorCode !== 'ORG_REJECTED' && (
                   <div style={{ marginBottom: 16, padding: '10px 12px', background: '#fee2e2', color: '#991b1b', borderRadius: 8, fontSize: 13 }}>
                     {error}
                   </div>
